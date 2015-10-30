@@ -1,0 +1,27 @@
+body { font-family: Helvetica, Arial, sans-serif; font-size:15px; margin:0; padding:0; background: #FFF; }
+a, .submit { -webkit-transition: all 0.2s ease-in-out; -moz-transition: all 0.2s ease-in-out;  transition: all 0.2s ease-in-out; }
+
+img { display:none; }
+#content { background: #FFF; }
+#content form { margin:0 auto; padding: 20px 30px; width:340px; background:#EEE; z-index: 100; position: relative; }
+#branding { position:absolute; bottom:0; left: 50%; margin-left: -148px; }
+#branding a { display:block; color:#000; background: #BBB url(../images/ee-big.png) no-repeat 23px 20px; opacity: 0.5; padding: 22px 20px 30px 66px; margin: 0 auto; width: 215px; }
+#branding a:hover { opacity: 0.7; }
+
+#branding a:after { content:'Powered by ExpressionEngine'; }
+a { color:#666; text-decoration:none; }
+a:hover { color:#333; }
+dt { font-size:20px; line-height:20px; color: #CCC; margin-top:2px; width: 99px; float: left; padding: 11px; height: 15px; }
+dt label { color: #666; }
+dd { margin:0 0 3px; font-size:11px; line-height:24px; color:#666; }
+input,.error { font-family: Helvetica, Arial, sans-serif; font-size:24px; border:1px #CCC solid; padding:6px;  margin-right:5px; color:#333; outline: none; }
+input[type=text],input[type=password] { width: 200px !important; border: 1px #BBB solid; }
+input:focus { border: 1px #777 solid; }
+input[type=checkbox] { width:auto; margin: 0 10px 0 0; }
+span a { color: #999; font-size: 13px; margin-top: 20px; display: block; }
+input.submit { background:#666; padding:7px 16px 9px; color:#fff; font-weight:bold; font-size:18px; border:0; width:auto; display: block; margin: 25px 0 5px 0; display: block; width: 100px; }
+input.submit:hover { background: #333; cursor: pointer; }
+p { margin-left: 128px; }
+.error { font-size:14px; background:#fdf5b2; padding:3px 0; margin: 0 auto; width:400px; border:0; border-bottom: 1px #BBB solid; }
+
+.error p { margin:8px 0; text-align: center; color: #333; }

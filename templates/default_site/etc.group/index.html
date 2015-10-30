@@ -1,0 +1,15 @@
+{embed="embeds/html_header"}
+{embed="embeds/branding_header"}
+  <div class="container">
+    <div class="wrap">
+      <div class="col940 first last">
+        <h2>Et Cetera</h2>
+        <ul>
+	{exp:channel:entries channel="etc" limit="10"}
+	  <li><a href="{title_permalink="etc/archive"}">{title}</a></li>
+        {/exp:channel:entries}
+        </ul>
+      </div>
+    </div>
+  </div>
+{embed="embeds/html_close"}

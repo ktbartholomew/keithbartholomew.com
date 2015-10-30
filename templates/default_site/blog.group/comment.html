@@ -1,0 +1,57 @@
+{embed="embeds/html_header"}
+{branding_header}
+    <div class="wrap">
+      <div class="col620 right last">
+        {exp:channel:entries channel="blog" limit="10" track_views="one"}
+          <div class="blog-post">
+            <h2 class="post-title"><a href="{title_permalink="blog"}">{title}</a></h2>
+            {blog_body}
+            <a name="comments"></a>
+            <div class="comment-prompt">
+              <i class="icon-comment icon-large"></i>&nbsp;&nbsp;<em>{comment_total} comments about this.</em>&nbsp;&nbsp;<a href="#" onclick="leaveCommentClick('{title_permalink="blog/comments_only"}',this);return false;">Leave your own <i class="icon-caret-down"></i></a>
+              {exp:comment:form channel="blog"}
+                {if logged_out}
+                                <label for="name"><strong>Name:</strong></label> <input type="text" name="name" value="{name}" size="50" /><br />
+                                <label for="email"><strong>Email:</strong></label> <input type="text" name="email" value="" size="50" /><br />
+                                <label for="location">Location:</label> <input type="text" name="location" value="{location}" size="50" /><br />
+                                <label for="url">Your website:</label> <input type="text" name="url" value="{url}" size="50" /><br />
+                        {/if}
+                
+                        <label for="comment">Comment:</label><br />
+                        <textarea name="comment" cols="70" rows="3">{comment}</textarea>
+                        {if captcha}
+                                <label for="captcha">Please enter the word you see in the image below:</label><br />
+                                <p>{captcha}<br />
+                                <input type="text" name="captcha" value="{captcha_word}" maxlength="20" /></p>
+                        {/if}
+                
+                        <input type="submit" class="btn btn-primary" name="submit" value="Submit" />
+                
+                {/exp:comment:form}
+                {exp:comment:entries sort="desc" orderby="date" limit="10" dynamic="yes"}
+                        <div class="comment">
+                           <div class="comment-info">{name} on {comment_date format="%m-%d-%Y"}:</div>
+                           <div class="comment-body">{comment}</div>
+                        </div>
+                {/exp:comment:entries}
+            </div>
+          </div>
+	{paginate}
+          <p>Page {current_page} of {total_pages} pages {pagination_links}</p>
+        {/paginate}
+        {/exp:channel:entries}
+      </div>
+      <div class="col300 right first">
+        <div class="sidebar-section">
+          {about_me}
+        </div>
+        <div class="sidebar-section">
+          <h3>Popular Posts</h3>
+            {exp:channel:entries channel="blog" dynamic="no" orderby="view_count_one" sort="desc" limit="5"}
+              <a href="{title_permalink="blog"}">{title}</a><br/>
+            {/exp:channel:entries}
+        </div>
+      </div>
+      <br class="clear"/>
+    </div>
+{embed="embeds/html_close"}

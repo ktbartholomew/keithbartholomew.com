@@ -1,0 +1,30 @@
+{embed="embeds/html_header"}
+{embed="embeds/branding_header"}
+    <div class="wrap">
+      <div class="col620 right last">
+        {if group_id == '1'}
+	  {exp:channel:entries channel="blog" limit="10" status="open | draft"}
+            {blog_channel}
+          {/exp:channel:entries}
+        {if:else}
+          {exp:channel:entries channel="blog" limit="10" status="open" track_views="one"}
+            {blog_channel}
+          {/exp:channel:entries}
+        {/if}
+      </div>
+      <div class="col300 right first">
+        <div class="sidebar-section">
+          {about_me}
+        </div>
+        <div class="sidebar-section">
+          <div id="popular-posts" data-spy="affix" data-offset-top="830">
+          <h3>Popular Posts</h3>
+            {exp:channel:entries channel="blog" dynamic="no" orderby="view_count_one" sort="desc" limit="5"}
+              <a href="{title_permalink="blog"}">{title}</a><br/>
+            {/exp:channel:entries}
+          </div>
+        </div>
+      </div>
+      <br class="clear"/>
+    </div>
+{embed="embeds/html_close"}

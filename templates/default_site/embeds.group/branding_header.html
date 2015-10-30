@@ -1,0 +1,13 @@
+<div class="wrap">
+  <div class="nav col940">
+    <a class="nav-item {if segment_1 == "blog" || segment_1 == ""}active{/if}" id="nav-blog" href="{path='site_index'}">Blog</a>
+    <a class="nav-item {if segment_1 == "work"}active{/if}" id="nav-work" href="{path='work'}">Work</a>
+    <a class="nav-item {if segment_1 == "etc"}active{/if}" id="nav-etc" href="{path='etc'}">etc.</a>
+  </div>
+</div>
+<div class="wrap">
+  <div class="billboard col620 right">
+    <h1>Keith Bartholomew</h1>
+  </div>
+  <div id="jump-aboutme" class="btn btn-large" onclick="window.scrollTo(0,$('a[name=\'about-me\']').offset().top);">About Me</div>
+</div>

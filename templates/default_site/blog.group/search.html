@@ -1,0 +1,36 @@
+{embed="embeds/html_header"}
+{embed="embeds/branding_header"}
+    <div class="wrap">
+      <div class="col620 right last">
+        <h2>Not Found</h2>
+        <p>I reorganize my website from time to time, and it can cause old links to break&mdash;that's probably why you're here. You could <a href="/">go back to the home page</a> and try to browse for what you were looking for, or search for it in the box below:</p>
+        {exp:search:simple_form channel="blog" search_in="everywhere" status="not closed" where="all" show_expired="yes" show_future_entries="yes"}
+        <p>
+                <label for="keywords">Search:</label><br>
+                <input type="text" name="keywords" id="keywords" value="" size="18" maxlength="100">
+        </p>
+        <p>
+                <input type="submit" value="Search" class="submit btn btn-primary">
+        </p>
+{/exp:search:simple_form}
+{if segment_2 == 'results'}
+{exp:search:search_results}
+{title}
+{/exp:search:search_results}
+{/if}
+
+      </div>
+      <div class="col300 right first">
+        <div class="sidebar-section">
+          {about_me}
+        </div>
+        <div class="sidebar-section">
+          <h3>Popular Posts</h3>
+            {exp:channel:entries channel="blog" dynamic="no" orderby="view_count_one" sort="desc" limit="5"}
+              <a href="{title_permalink="blog"}">{title}</a><br/>
+            {/exp:channel:entries}
+        </div>
+      </div>
+      <br class="clear"/>
+    </div>
+{embed="embeds/html_close"}
