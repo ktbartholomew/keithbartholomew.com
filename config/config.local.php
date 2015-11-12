@@ -2,10 +2,10 @@
 
 /**
  * Local config overrides & db credentials
- * 
+ *
  * Our database credentials and any environment-specific overrides
  * This file should be specific to each developer and not tracked in Git
- * 
+ *
  * @package    Focus Lab Master Config
  * @version    1.1.1
  * @author     Focus Lab, LLC <dev@focuslabllc.com>
@@ -13,14 +13,14 @@
 
 
 // Local db
-$env_db['hostname'] = '';
-$env_db['username'] = '';
-$env_db['password'] = '';
-$env_db['database'] = '';
+$env_db['hostname'] = getenv('MYSQL_HOST');
+$env_db['username'] = getenv('MYSQL_USER');
+$env_db['password'] = getenv('MYSQL_PASS');
+$env_db['database'] = getenv('MYSQL_DB');
 
 /**
  * Remote db - typically a shared development database
- * 
+ *
  * Putting this below the local settings allows us to easily uncomment the
  * lines to connect to a secondary connection, overriding the first settings
  */
