@@ -89,7 +89,7 @@ if (isset($config))
 	 * path settings in the database after each migration
 	 * As inspired by Matt Weinberg: http://eeinsider.com/articles/multi-server-setup-for-ee-2/
 	 */
-	$protocol                          = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? 'https://' : 'http://';
+	$protocol                          = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') || $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https') ? 'https://' : 'http://';
 	$base_url                          = $protocol . $_SERVER['HTTP_HOST'];
 	$base_path                         = $_SERVER['DOCUMENT_ROOT'];
 	$system_folder                     = APPPATH . '../';
