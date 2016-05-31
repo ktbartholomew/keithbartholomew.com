@@ -1,7 +1,2 @@
-.vagrant
 .DS_Store
 
-www/images/captchas
-www/uploads/captcha
-system/expressionengine/cache
-system/expressionengine/cache/*
