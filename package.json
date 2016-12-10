@@ -1,0 +1,22 @@
+{
+  "name": "keithbartholomew.com",
+  "version": "1.0.0",
+  "description": "keithbartholomew.com",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ktbartholomew/keithbartholomew.com.git"
+  },
+  "author": "Keith Bartholomew <keith.bartholomew@gmail.com>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/ktbartholomew/keithbartholomew.com/issues"
+  },
+  "homepage": "https://github.com/ktbartholomew/keithbartholomew.com#readme",
+  "dependencies": {
+    "xterm": "^2.2.1"
+  }
+}
