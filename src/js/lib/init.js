@@ -10,6 +10,7 @@ module.exports = function () {
   fs.write('/home/website', new Directory());
   fs.write('/sbin', new Directory());
   fs.write('/usr', new Directory());
+  fs.write('/usr/bin', new Directory());
   fs.write('/var', new Directory());
 
   fs.write('/bin/cat', require('../bin/cat'));
