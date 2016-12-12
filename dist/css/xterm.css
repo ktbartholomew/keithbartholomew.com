@@ -71,12 +71,12 @@
 }
 
 .terminal .terminal-cursor {
-    background-color: #EEE8D5;
+    background-color: rgba(238, 232, 213, 0.5);
     color: #002b36;
 }
 
 .terminal:not(.focus) .terminal-cursor {
-    outline: 1px solid #EEE8D5;
+    outline: 1px solid rgba(238, 232, 213, 0.5);
     outline-offset: -1px;
     background-color: transparent;
 }
@@ -87,12 +87,12 @@
 
 @keyframes blink-cursor {
     0% {
-        background-color: #EEE8D5;
-        color: #002b36;
+        background-color: rgba(238, 232, 213, 0.5);
+        color: rgba(238, 232, 213, 1);
     }
     50% {
         background-color: transparent;
-        color: #EEE8D5;
+        color: rgba(238, 232, 213, 1);
     }
 }
 

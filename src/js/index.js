@@ -1,5 +1,8 @@
 require('./lib/term');
 var os = require('./lib/os');
+var init = require('./lib/init');
 
-os.exec('/bin/motd');
+init();
+
+os.exec('/bin/cat', '/etc/motd');
 os.exec('/bin/sh');

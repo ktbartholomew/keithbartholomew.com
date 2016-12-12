@@ -1,6 +1,4 @@
 var fs = require('./fs');
-var Executable = require('./files/executable');
-var Directory = require('./files/directory');
 
 var env = {
   HOME: '/home/website',
@@ -12,21 +10,6 @@ var env = {
 };
 
 var cwd = env.PWD;
-
-fs.write('/', new Directory());
-fs.write('/bin', new Directory());
-fs.write('/etc', new Directory());
-fs.write('/home', new Directory());
-fs.write('/home/website', new Directory());
-fs.write('/sbin', new Directory());
-fs.write('/usr', new Directory());
-fs.write('/var', new Directory());
-
-fs.write('/usr/bin/cd', require('../bin/cd'));
-fs.write('/bin/ls', require('../bin/ls'));
-fs.write('/bin/pwd', require('../bin/pwd'));
-fs.write('/bin/motd', require('../bin/motd'));
-fs.write('/bin/sh', require('../bin/shell'));
 
 module.exports = {
   getenv: function () {
@@ -43,7 +26,7 @@ module.exports = {
     env.PWD = cwd = dir;
   },
   exec: function () {
-    if (fs.read(arguments[0]) instanceof Executable === false) {
+    if (fs.stat(arguments[0]).type !== 'executable') {
       throw new Error(arguments[0] + ' is not an Executable');
     }
 

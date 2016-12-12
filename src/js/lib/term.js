@@ -9,14 +9,16 @@ var term = new Terminal({
 
 term.open(document.getElementById('terminal'));
 
-(function () {
+var resizeTerminal = function () {
   var cols = Math.floor(window.innerWidth / term.charMeasureElement.getBoundingClientRect().width) - 1;
   var rows = Math.floor(window.innerHeight / term.charMeasureElement.getBoundingClientRect().height);
   term.resize(cols, rows);
-})();
+};
 
+window.addEventListener('resize', resizeTerminal);
+
+resizeTerminal();
 term.focus();
-
 chalk.enabled = true;
 
-module.exports = window.term = term;
+module.exports = term;

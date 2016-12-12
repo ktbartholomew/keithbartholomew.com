@@ -46,8 +46,11 @@
 
 	__webpack_require__(1);
 	var os = __webpack_require__(7);
+	var init = __webpack_require__(25);
 
-	os.exec('/bin/motd');
+	init();
+
+	os.exec('/bin/cat', '/etc/motd');
 	os.exec('/bin/sh');
 
 
@@ -66,17 +69,19 @@
 
 	term.open(document.getElementById('terminal'));
 
-	(function () {
+	var resizeTerminal = function () {
 	  var cols = Math.floor(window.innerWidth / term.charMeasureElement.getBoundingClientRect().width) - 1;
 	  var rows = Math.floor(window.innerHeight / term.charMeasureElement.getBoundingClientRect().height);
 	  term.resize(cols, rows);
-	})();
+	};
 
+	window.addEventListener('resize', resizeTerminal);
+
+	resizeTerminal();
 	term.focus();
-
 	chalk.enabled = true;
 
-	module.exports = window.term = term;
+	module.exports = term;
 
 
 /***/ },
@@ -5343,8 +5348,6 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var fs = __webpack_require__(3);
-	var Executable = __webpack_require__(5);
-	var Directory = __webpack_require__(4);
 
 	var env = {
 	  HOME: '/home/website',
@@ -5356,21 +5359,6 @@
 	};
 
 	var cwd = env.PWD;
-
-	fs.write('/', new Directory());
-	fs.write('/bin', new Directory());
-	fs.write('/etc', new Directory());
-	fs.write('/home', new Directory());
-	fs.write('/home/website', new Directory());
-	fs.write('/sbin', new Directory());
-	fs.write('/usr', new Directory());
-	fs.write('/var', new Directory());
-
-	fs.write('/usr/bin/cd', __webpack_require__(12));
-	fs.write('/bin/ls', __webpack_require__(10));
-	fs.write('/bin/pwd', __webpack_require__(11));
-	fs.write('/bin/motd', __webpack_require__(8));
-	fs.write('/bin/sh', __webpack_require__(9));
 
 	module.exports = {
 	  getenv: function () {
@@ -5387,7 +5375,7 @@
 	    env.PWD = cwd = dir;
 	  },
 	  exec: function () {
-	    if (fs.read(arguments[0]) instanceof Executable === false) {
+	    if (fs.stat(arguments[0]).type !== 'executable') {
 	      throw new Error(arguments[0] + ' is not an Executable');
 	    }
 
@@ -5412,172 +5400,7 @@
 
 
 /***/ },
-/* 9 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var chalk = __webpack_require__(13);
-	var path = __webpack_require__(22);
-	var Executable = __webpack_require__(5);
-
-	module.exports = new Executable({
-	  main: function () {
-	    var term = __webpack_require__(1);
-	    var os = __webpack_require__(7);
-	    var fs = __webpack_require__(3);
-
-	    var writePrompt = function () {
-	      if (term.x !== 0) {
-	        term.x = 0;
-	        term.y += 1;
-	      }
-	      term.write(PS1());
-	      term.refresh(term.y + term.ybase - 1, term.y + term.ybase);
-	      term.x = PS1().length;
-	    };
-
-	    var PS1 = function () {
-	      var cwd = os.getcwd();
-	      var homeDir = new RegExp('^' + os.getenv().HOME);
-
-	      cwd = cwd.replace(homeDir, '~');
-
-	      return cwd + ' $ ';
-	    };
-
-	    var evaluateInput = function (input, callback) {
-	      callback = callback || writePrompt;
-	      term.writeln('');
-
-	      if (input === '') {
-	        return callback();
-	      }
-
-	      input = input.split(' ');
-
-	      try {
-	        input[0] = resolveExecutable(input[0]);
-	        os.exec.apply(undefined, input);
-	      } catch (e) {
-	        term.writeln(chalk.red(e));
-	      }
-
-	      return callback();
-	    };
-
-	    var resolveExecutable = function (name) {
-	      var paths = os.getenv().PATH.split(':');
-
-	      for (var i = 0; i < paths.length; i++) {
-	        var fullPath = path.resolve(paths[i], name);
-	        if (fs.stat(fullPath).type === 'executable') {
-	          return fullPath;
-	        }
-	      }
-
-	      throw new Error(name + ': command not found');
-	    };
-
-	    var tabComplete = function (input) {
-	      //  shh
-	    };
-
-	    var readLine = function () {
-	      var line = term.lines[term.y + term.ybase];
-	      var string = '';
-
-	      line.forEach(function (col) {
-	        string = string.concat(col[1]);
-	      });
-
-	      if (string.indexOf(PS1()) === 0) {
-	        string = string.substring(PS1().length);
-	      }
-
-	      string = string.trim();
-
-	      return string;
-	    };
-
-	    writePrompt();
-
-	    term.on('data', (data) => {
-	      var bytes = [];
-	      for (var i = 0; i < data.length; i++) {
-	        bytes.push(data.codePointAt(i).toString(10));
-	      }
-	      console.log(bytes);
-
-	      // An escape sequence!
-	      if (data.codePointAt(0) === 27) {
-	        // A cursor movement!
-	        if (data.codePointAt(1) === 91) {
-	          switch (data.codePointAt(2)) {
-	            // up
-	            case 65:
-	              break;
-	            // down
-	            case 66:
-	              break;
-	            // right
-	            case 67:
-	              if (term.x < term.cols && term.lines[term.y][term.x][1] !== ' ') {
-	                term.x += 1;
-	                term.write('');
-	              }
-	              break;
-	            // left
-	            case 68:
-	              if (term.x > PS1().length) {
-	                term.x -= 1;
-	                term.write('');
-	              }
-	              break;
-	          }
-	        }
-	      }
-
-	      // A control sequence!
-	      if (data.codePointAt(0) < 32) {
-	        switch (data.codePointAt(0)) {
-	          // [tab]
-	          case 9:
-	            tabComplete(readLine());
-	            break;
-	          // [enter]
-	          case 13:
-	            evaluateInput(readLine());
-	            break;
-	          default:
-	        }
-
-	        return;
-	      }
-
-	      if (data.codePointAt(0) === 127) {
-	        // backspace
-	        if (term.x <= PS1().length) {
-	          return;
-	        }
-	        term.x -= 1;
-	        var x = term.x;
-	        var y = term.y + term.ybase;
-	        var blank = [term.eraseAttr(), ' ', 1];
-
-	        term.lines[y].splice(x, 1);
-	        term.lines[y].push(blank);
-
-	        term.refresh(y, y, true);
-
-	        return;
-	      }
-
-	      term.write(data);
-	    });
-	  }
-	});
-
-
-/***/ },
+/* 9 */,
 /* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -6400,6 +6223,391 @@
 	;
 
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(14)))
+
+/***/ },
+/* 23 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Executable = __webpack_require__(5);
+	var path = __webpack_require__(22);
+
+	module.exports = new Executable({
+	  main: function () {
+	    var term = __webpack_require__(1);
+	    var os = __webpack_require__(7);
+	    var fs = __webpack_require__(3);
+
+	    var filePath = path.resolve(os.getcwd(), arguments[1]);
+	    var file = fs.read(filePath);
+	    var fileType = fs.stat(filePath).type;
+	    var lines = [];
+
+	    switch (fileType) {
+	      case 'file':
+	        lines = file.contents.split('\n');
+	        break;
+	      case 'executable':
+	        lines = file.main.toString().split('\n');
+	        break;
+	    }
+
+	    lines.forEach(function (line) {
+	      term.writeln(line);
+	    });
+	  }
+	});
+
+
+/***/ },
+/* 24 */
+/***/ function(module, exports) {
+
+	module.exports = "+--------------------------------------+\n|    Welcome to KeithOS!               |\n|    v0.0.1 - codename: itBarelyWorks  |\n+--------------------------------------+\n"
+
+/***/ },
+/* 25 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Directory = __webpack_require__(4);
+	var File = __webpack_require__(6);
+	var fs = __webpack_require__(3);
+
+	module.exports = function () {
+	  fs.write('/', new Directory());
+	  fs.write('/bin', new Directory());
+	  fs.write('/etc', new Directory());
+	  fs.write('/home', new Directory());
+	  fs.write('/home/website', new Directory());
+	  fs.write('/sbin', new Directory());
+	  fs.write('/usr', new Directory());
+	  fs.write('/var', new Directory());
+
+	  fs.write('/bin/cat', __webpack_require__(23));
+	  fs.write('/usr/bin/cd', __webpack_require__(12));
+	  fs.write('/bin/ls', __webpack_require__(10));
+	  fs.write('/bin/pwd', __webpack_require__(11));
+	  fs.write('/bin/motd', __webpack_require__(8));
+	  fs.write('/bin/mkdir', __webpack_require__(11));
+	  fs.write('/bin/sh', __webpack_require__(28));
+
+	  fs.write('/etc/motd', new File({contents: __webpack_require__(24)}));
+	};
+
+
+/***/ },
+/* 26 */,
+/* 27 */,
+/* 28 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Executable = __webpack_require__(5);
+
+	module.exports = new Executable({
+	  main: function () {
+	    var readline = __webpack_require__(29);
+
+	    readline();
+	  }
+	});
+
+
+/***/ },
+/* 29 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var term = __webpack_require__(1);
+	var os = __webpack_require__(7);
+	var fs = __webpack_require__(3);
+	var chalk = __webpack_require__(13);
+	var path = __webpack_require__(22);
+	var prompt = __webpack_require__(30);
+
+	module.exports = function () {
+	  var resolveExecutable = function (name) {
+	    var paths = os.getenv().PATH.split(':');
+
+	    for (var i = 0; i < paths.length; i++) {
+	      var fullPath = path.resolve(paths[i], name);
+	      if (fs.stat(fullPath).type === 'executable') {
+	        return fullPath;
+	      }
+	    }
+
+	    throw new Error(name + ': command not found');
+	  };
+
+	  var handleInput = function (input) {
+	    if (input === '') {
+	      return prompt.prompt(handleInput);
+	    }
+
+	    input = input.split(' ');
+
+	    try {
+	      input[0] = resolveExecutable(input[0]);
+	      os.exec.apply(undefined, input);
+	    } catch (e) {
+	      term.writeln(chalk.red(e));
+	    }
+	    prompt.prompt(handleInput);
+	  };
+
+	  prompt.prompt(handleInput);
+	};
+
+
+/***/ },
+/* 30 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var term = __webpack_require__(1);
+	var os = __webpack_require__(7);
+	var chalk = __webpack_require__(13);
+	var tabComplete = __webpack_require__(31);
+
+	module.exports = {
+	  prompt: function (callback) {
+	    var input = {
+	      contents: '',
+	      cursor: 0
+	    };
+
+	    var cursor = {
+	      left: function () {
+	        input.cursor = Math.max(0, input.cursor - 1);
+	        drawPrompt();
+	      },
+	      right: function () {
+	        input.cursor = Math.min(input.contents.length, input.cursor + 1);
+	        drawPrompt();
+	      },
+	      home: function () {
+	        input.cursor = 0;
+	        drawPrompt();
+	      },
+	      end: function () {
+	        input.cursor = input.contents.length;
+	        drawPrompt();
+	      }
+	    };
+
+	    var drawPrompt = function () {
+	      term.x = 0;
+	      term.eraseLine(term.y);
+	      term.write(PS1() + input.contents);
+	      term.x = chalk.stripColor(PS1()).length + input.cursor;
+
+	      term.refresh(term.y + term.ybase, term.y + term.ybase + 1, false);
+	    };
+
+	    var insertData = function (data) {
+	      var contents = input.contents.split('');
+	      var addition = data.split('');
+
+	      Array.prototype.splice.apply(contents, [input.cursor, 0].concat(addition));
+
+	      input.contents = contents.join('');
+	      input.cursor += addition.length;
+	      drawPrompt();
+	    };
+
+	    var backspace = function () {
+	      var contents = input.contents.split('');
+	      contents.splice(input.cursor - 1, 1);
+
+	      input.contents = contents.join('');
+	      input.cursor = Math.max(0, input.cursor - 1);
+	      drawPrompt();
+	    };
+
+	    var PS1 = function () {
+	      var cwd = os.getcwd();
+	      var homeDir = new RegExp('^' + os.getenv().HOME);
+
+	      cwd = cwd.replace(homeDir, '~');
+
+	      return chalk.blue(cwd + ' $ ');
+	    };
+
+	    var dataHandler = function (data) {
+	      var bytes = [];
+	      for (var i = 0; i < data.length; i++) {
+	        bytes.push(data.codePointAt(i));
+	      }
+	      console.log(bytes);
+
+	      if (bytes[0] === 27 && bytes[1] === 91) {
+	        switch (bytes[2]) {
+	          case 67:
+	            cursor.right();
+	            break;
+	          case 68:
+	            cursor.left();
+	            break;
+	          case 70:
+	            cursor.end();
+	            break;
+	          case 72:
+	            cursor.home();
+	            break;
+	        }
+	      }
+
+	      if (bytes[0] < 32) {
+	        switch (bytes[0]) {
+	          case 1:
+	            cursor.home();
+	            break;
+	          case 2:
+	            cursor.left();
+	            break;
+	          case 5:
+	            cursor.end();
+	            break;
+	          case 6:
+	            cursor.right();
+	            break;
+	          case 7:
+	            term.bell();
+	            break;
+	          case 9:
+	            tabComplete(input, function (err, result) {
+	              if (err) {
+	                throw err;
+	              }
+
+	              insertData(result);
+	            });
+	            break;
+	          case 13:
+	            endPrompt();
+	            break;
+	        }
+
+	        return;
+	      }
+
+	      if (bytes[0] === 127) {
+	        return backspace();
+	      }
+
+	      insertData(data);
+	    };
+
+	    var endPrompt = function () {
+	      term.writeln('');
+	      term.off('data', dataHandler);
+	      callback(input.contents);
+	    };
+
+	    term.on('data', dataHandler);
+	    drawPrompt();
+	  }
+	};
+
+
+/***/ },
+/* 31 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var os = __webpack_require__(7);
+	var fs = __webpack_require__(3);
+	var path = __webpack_require__(22);
+
+	var tabCompleteState = {
+	  treatNextAsDoubleTab: false
+	};
+
+	module.exports = function (input, callback) {
+	  var getStringToComplete = function () {
+	    var inputString = input.contents.trim();
+	    var characters = [];
+
+	    for (var i = input.cursor - 1; i >= 0; i--) {
+	      if (inputString[i] === ' ') {
+	        break;
+	      }
+
+	      characters.unshift(inputString[i]);
+	    }
+
+	    return characters.join('');
+	  };
+
+	  var isFirstWord = function () {
+	    var inputString = input.contents.trim();
+
+	    return inputString.indexOf(' ') === -1 || input.cursor - 1 < inputString.indexOf(' ');
+	  };
+
+	  var getCommandCompletion = function (stringToComplete) {
+	    var paths = os.getenv().PATH.split(':');
+	    var possibleCompletions = [];
+
+	    paths.forEach(function (_path_) {
+	      var files = fs.scan(_path_);
+	      files.forEach(function (file) {
+	        if (fs.stat(file).type !== 'executable') {
+	          return;
+	        }
+
+	        if (path.basename(file).indexOf(stringToComplete) === 0) {
+	          possibleCompletions.push(path.basename(file));
+	        }
+	      });
+	    });
+
+	    console.log(possibleCompletions);
+
+	    if (possibleCompletions.length === 1) {
+	      return possibleCompletions[0];
+	    }
+
+	    return '';
+	  };
+
+	  var getPathCompletion = function (stringToComplete) {
+	    var possibleCompletions = [];
+	    var resolvedPath = path.resolve(os.getcwd(), stringToComplete);
+	    var pathToScan = '';
+
+	    if (fs.stat(resolvedPath).type === 'directory') {
+	      pathToScan = resolvedPath;
+	    } else {
+	      pathToScan = path.dirname(resolvedPath);
+	    }
+
+	    var files = fs.scan(pathToScan);
+	    files.forEach(function (file) {
+	      if (file.indexOf(resolvedPath) === 0) {
+	        possibleCompletions.push(file);
+	      }
+	    });
+
+	    if (possibleCompletions.length === 1) {
+	      if (fs.stat(possibleCompletions[0]).type === 'directory') {
+	        return possibleCompletions[0] + '/';
+	      } else {
+	        return possibleCompletions[0];
+	      }
+	    }
+
+	    return '';
+	  };
+
+	  var getCompletionDelta = function (stringToComplete, completedString) {
+	    return completedString.replace(new RegExp('^' + stringToComplete), '');
+	  };
+
+	  var stringToComplete = getStringToComplete();
+	  var completedString = (isFirstWord()) ?
+	    getCommandCompletion(stringToComplete) :
+	    getPathCompletion(stringToComplete);
+
+	  // console.log(getCompletionDelta(stringToComplete, completedString));
+	  callback(null, getCompletionDelta(stringToComplete, completedString));
+	};
+
 
 /***/ }
 /******/ ]);
