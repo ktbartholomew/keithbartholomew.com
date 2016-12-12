@@ -6262,7 +6262,7 @@
 /* 24 */
 /***/ function(module, exports) {
 
-	module.exports = "+--------------------------------------+\n|    Welcome to KeithOS!               |\n|    v0.0.1 - codename: itBarelyWorks  |\n+--------------------------------------+\n"
+	module.exports = "#\n# Welcome to KeithOS!\n# v0.0.1 - codename: itBarelyWorks\n#\n# (Lost? Type `cat help.txt` and press enter)\n#\n"
 
 /***/ },
 /* 25 */
@@ -6291,6 +6291,7 @@
 	  fs.write('/bin/sh', __webpack_require__(28));
 
 	  fs.write('/etc/motd', new File({contents: __webpack_require__(24)}));
+	  fs.write('/home/website/help.txt', new File({contents: __webpack_require__(32)}));
 	};
 
 
@@ -6434,7 +6435,6 @@
 	      for (var i = 0; i < data.length; i++) {
 	        bytes.push(data.codePointAt(i));
 	      }
-	      console.log(bytes);
 
 	      if (bytes[0] === 27 && bytes[1] === 91) {
 	        switch (bytes[2]) {
@@ -6557,8 +6557,6 @@
 	      });
 	    });
 
-	    console.log(possibleCompletions);
-
 	    if (possibleCompletions.length === 1) {
 	      return possibleCompletions[0];
 	    }
@@ -6580,15 +6578,18 @@
 	    var files = fs.scan(pathToScan);
 	    files.forEach(function (file) {
 	      if (file.indexOf(resolvedPath) === 0) {
+	        if (fs.stat(file).type === 'directory') {
+	          file = file + '/';
+	        }
 	        possibleCompletions.push(file);
 	      }
 	    });
 
 	    if (possibleCompletions.length === 1) {
 	      if (fs.stat(possibleCompletions[0]).type === 'directory') {
-	        return possibleCompletions[0] + '/';
+	        return path.basename(possibleCompletions[0]) + '/';
 	      } else {
-	        return possibleCompletions[0];
+	        return path.basename(possibleCompletions[0]);
 	      }
 	    }
 
@@ -6596,18 +6597,23 @@
 	  };
 
 	  var getCompletionDelta = function (stringToComplete, completedString) {
-	    return completedString.replace(new RegExp('^' + stringToComplete), '');
+	    return completedString.replace(new RegExp('^' + path.basename(stringToComplete)), '');
 	  };
 
 	  var stringToComplete = getStringToComplete();
-	  var completedString = (isFirstWord()) ?
-	    getCommandCompletion(stringToComplete) :
-	    getPathCompletion(stringToComplete);
+	  var completedString = (isFirstWord())
+	    ? getCommandCompletion(stringToComplete)
+	    : getPathCompletion(stringToComplete);
 
-	  // console.log(getCompletionDelta(stringToComplete, completedString));
 	  callback(null, getCompletionDelta(stringToComplete, completedString));
 	};
 
+
+/***/ },
+/* 32 */
+/***/ function(module, exports) {
+
+	module.exports = "# What am I looking at?\n\nThis whole website simulates a Linux shell environment. You do things by typing\nthe name of a command, optionally adding extra information (called arguments),\nthen pressing enter to see the command’s output.\n"
 
 /***/ }
 /******/ ]);

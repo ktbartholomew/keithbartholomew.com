@@ -45,8 +45,6 @@ module.exports = function (input, callback) {
       });
     });
 
-    console.log(possibleCompletions);
-
     if (possibleCompletions.length === 1) {
       return possibleCompletions[0];
     }
@@ -68,15 +66,18 @@ module.exports = function (input, callback) {
     var files = fs.scan(pathToScan);
     files.forEach(function (file) {
       if (file.indexOf(resolvedPath) === 0) {
+        if (fs.stat(file).type === 'directory') {
+          file = file + '/';
+        }
         possibleCompletions.push(file);
       }
     });
 
     if (possibleCompletions.length === 1) {
       if (fs.stat(possibleCompletions[0]).type === 'directory') {
-        return possibleCompletions[0] + '/';
+        return path.basename(possibleCompletions[0]) + '/';
       } else {
-        return possibleCompletions[0];
+        return path.basename(possibleCompletions[0]);
       }
     }
 
@@ -84,14 +85,13 @@ module.exports = function (input, callback) {
   };
 
   var getCompletionDelta = function (stringToComplete, completedString) {
-    return completedString.replace(new RegExp('^' + stringToComplete), '');
+    return completedString.replace(new RegExp('^' + path.basename(stringToComplete)), '');
   };
 
   var stringToComplete = getStringToComplete();
-  var completedString = (isFirstWord()) ?
-    getCommandCompletion(stringToComplete) :
-    getPathCompletion(stringToComplete);
+  var completedString = (isFirstWord())
+    ? getCommandCompletion(stringToComplete)
+    : getPathCompletion(stringToComplete);
 
-  // console.log(getCompletionDelta(stringToComplete, completedString));
   callback(null, getCompletionDelta(stringToComplete, completedString));
 };

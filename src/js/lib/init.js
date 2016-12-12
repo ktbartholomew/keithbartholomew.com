@@ -21,4 +21,5 @@ module.exports = function () {
   fs.write('/bin/sh', require('../bin/sh'));
 
   fs.write('/etc/motd', new File({contents: require('raw!../etc/motd')}));
+  fs.write('/home/website/help.txt', new File({contents: require('raw!../home/help.md')}));
 };

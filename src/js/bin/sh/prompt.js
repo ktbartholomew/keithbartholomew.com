@@ -72,7 +72,6 @@ module.exports = {
       for (var i = 0; i < data.length; i++) {
         bytes.push(data.codePointAt(i));
       }
-      console.log(bytes);
 
       if (bytes[0] === 27 && bytes[1] === 91) {
         switch (bytes[2]) {
