@@ -8,7 +8,7 @@ module.exports = new Executable({
     var fs = require('../lib/fs');
     var os = require('../lib/os');
 
-    var target = arguments[1] || os.getcwd();
+    var target = (arguments[1]) ? path.resolve(os.getcwd(), arguments[1]) : os.getcwd();
     var children = fs.scan(target);
 
     for (var i = 0; i < children.length; i++) {

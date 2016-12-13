@@ -32,7 +32,7 @@ module.exports = function () {
     } catch (e) {
       term.writeln(chalk.red(e));
     }
-    prompt.prompt(handleInput);
+    return prompt.prompt(handleInput);
   };
 
   prompt.prompt(handleInput);

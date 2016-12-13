@@ -113,7 +113,13 @@ module.exports = {
                 throw err;
               }
 
-              insertData(result);
+              if (result.multiple) {
+                term.writeln('');
+                term.writeln(result.string);
+                drawPrompt();
+              } else {
+                insertData(result.stringDelta);
+              }
             });
             break;
           case 13:

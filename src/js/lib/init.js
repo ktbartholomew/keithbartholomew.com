@@ -17,10 +17,19 @@ module.exports = function () {
   fs.write('/usr/bin/cd', require('../bin/cd'));
   fs.write('/bin/ls', require('../bin/ls'));
   fs.write('/bin/pwd', require('../bin/pwd'));
-  fs.write('/bin/motd', require('../bin/motd'));
-  fs.write('/bin/mkdir', require('../bin/pwd'));
+  fs.write('/sbin/reboot', require('../sbin/reboot'));
+  fs.write('/bin/mkdir', require('../bin/mkdir'));
   fs.write('/bin/sh', require('../bin/sh'));
 
   fs.write('/etc/motd', new File({contents: require('raw!../etc/motd')}));
-  fs.write('/home/website/help.txt', new File({contents: require('raw!../home/help.md')}));
+  fs.write('/etc/resolv.conf', new File({contents: 'hah! this is essentially an empty file.'}));
+  fs.write('/etc/passwd', new File({contents: 'hah! this is essentially an empty file.'}));
+  fs.write('/etc/shadow', new File({contents: 'hah! this is essentially an empty file.'}));
+  fs.write('/etc/group', new File({contents: 'hah! this is essentially an empty file.'}));
+  fs.write('/home/otheruser', new Directory());
+  fs.write('/home/website/help.md', new File({contents: require('raw!../home/help.md')}));
+  fs.write('/home/website/about-me.md', new File({contents: require('raw!../home/about-me.md')}));
+  fs.write('/home/website/links', new Directory());
+  fs.write('/home/website/photos', new Directory());
+  fs.write('/home/website/photos/keith.jpg', new File({contents: ''}));
 };

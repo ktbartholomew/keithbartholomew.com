@@ -1,9 +1,7 @@
 var Executable = require('../lib/files/executable');
-var term = require('../lib/term');
-var os = require('../lib/os');
 
 module.exports = new Executable({
   main: function () {
-    term.writeln(os.getcwd());
+    window.location.reload();
   }
 });

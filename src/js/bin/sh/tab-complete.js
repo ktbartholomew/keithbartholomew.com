@@ -3,7 +3,20 @@ var fs = require('../../lib/fs');
 var path = require('path-browserify');
 
 var tabCompleteState = {
-  treatNextAsDoubleTab: false
+  lastString: null
+};
+
+var Completion = function (options) {
+  options = options || {};
+
+  if (!options.source && options.source !== '') {
+    throw new Error('options.source is required');
+  }
+
+  this.source = options.source;
+  this.multiple = options.multiple || false;
+  this.string = options.string || '';
+  this.stringDelta = this.string.replace(new RegExp('^' + this.source), '');
 };
 
 module.exports = function (input, callback) {
@@ -25,7 +38,7 @@ module.exports = function (input, callback) {
   var isFirstWord = function () {
     var inputString = input.contents.trim();
 
-    return inputString.indexOf(' ') === -1 || input.cursor - 1 < inputString.indexOf(' ');
+    return inputString.indexOf(' ') === -1 || input.cursor <= inputString.indexOf(' ');
   };
 
   var getCommandCompletion = function (stringToComplete) {
@@ -40,16 +53,29 @@ module.exports = function (input, callback) {
         }
 
         if (path.basename(file).indexOf(stringToComplete) === 0) {
-          possibleCompletions.push(path.basename(file));
+          possibleCompletions.push(path.basename(file) + ' ');
         }
       });
     });
 
     if (possibleCompletions.length === 1) {
-      return possibleCompletions[0];
+      return new Completion({
+        source: stringToComplete,
+        string: possibleCompletions[0]
+      });
     }
 
-    return '';
+    if (tabCompleteState.lastString === stringToComplete) {
+      return new Completion({
+        source: stringToComplete,
+        multiple: true,
+        string: possibleCompletions.join('\t')
+      });
+    }
+
+    return new Completion({
+      source: stringToComplete
+    });
   };
 
   var getPathCompletion = function (stringToComplete) {
@@ -66,32 +92,56 @@ module.exports = function (input, callback) {
     var files = fs.scan(pathToScan);
     files.forEach(function (file) {
       if (file.indexOf(resolvedPath) === 0) {
-        if (fs.stat(file).type === 'directory') {
-          file = file + '/';
-        }
         possibleCompletions.push(file);
       }
     });
 
     if (possibleCompletions.length === 1) {
       if (fs.stat(possibleCompletions[0]).type === 'directory') {
-        return path.basename(possibleCompletions[0]) + '/';
-      } else {
-        return path.basename(possibleCompletions[0]);
+        possibleCompletions[0] = possibleCompletions[0] + '/';
       }
+
+      if (fs.stat(resolvedPath).type === 'directory') {
+        resolvedPath = resolvedPath + '/';
+      }
+
+      return new Completion({
+        source: resolvedPath,
+        multiple: false,
+        string: possibleCompletions[0]
+      });
     }
 
-    return '';
+    if (possibleCompletions.length > 1 && tabCompleteState.lastString === stringToComplete) {
+      possibleCompletions.forEach(function (item, index, array) {
+        if (fs.stat(item).type === 'directory') {
+          array[index] = path.basename(item) + '/';
+        } else {
+          array[index] = path.basename(item);
+        }
+      });
+
+      return new Completion({
+        source: resolvedPath,
+        multiple: true,
+        string: possibleCompletions.join('\t')
+      });
+    }
+
+    return new Completion({
+      source: resolvedPath
+    });
   };
 
-  var getCompletionDelta = function (stringToComplete, completedString) {
-    return completedString.replace(new RegExp('^' + path.basename(stringToComplete)), '');
-  };
+  try {
+    var stringToComplete = getStringToComplete();
+    var completedString = (isFirstWord())
+      ? getCommandCompletion(stringToComplete)
+      : getPathCompletion(stringToComplete);
 
-  var stringToComplete = getStringToComplete();
-  var completedString = (isFirstWord())
-    ? getCommandCompletion(stringToComplete)
-    : getPathCompletion(stringToComplete);
-
-  callback(null, getCompletionDelta(stringToComplete, completedString));
+    tabCompleteState.lastString = stringToComplete;
+    callback(null, completedString);
+  } catch (e) {
+    callback(e, null);
+  }
 };
