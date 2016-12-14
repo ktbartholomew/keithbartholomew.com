@@ -1,6 +1,7 @@
 var Directory = require('./files/directory');
 var File = require('./files/file');
 var Image = require('./files/image');
+var os = require('./os');
 var fs = require('./fs');
 
 module.exports = function () {
@@ -33,4 +34,7 @@ module.exports = function () {
   fs.write('/home/website/links', new Directory());
   fs.write('/home/website/photos', new Directory());
   fs.write('/home/website/photos/keith.jpg', new Image({src: '/dist/img/keith.jpg'}));
+
+  os.exec('/bin/cat', '/etc/motd');
+  os.exec('/bin/sh');
 };

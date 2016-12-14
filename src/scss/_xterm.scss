@@ -1,6 +1,6 @@
 .terminal {
-    background-color: #002b36;
-    color: #EEE8D5;
+    background-color: $base03;
+    color: $base1;
     font-family: "source code pro", monaco, menlo, "courier new", courier, monospace;
     font-feature-settings: "liga" 0;
 }
@@ -35,34 +35,34 @@
 }
 
 .terminal .terminal-cursor {
-    background-color: rgba(238, 232, 213, 0.5);
-    color: #002b36;
+    background-color: rgba($base1, 0.5);
+    color: $base1;
 }
 
 .terminal:not(.focus) .terminal-cursor {
-    outline: 1px solid rgba(238, 232, 213, 0.5);
+    outline: 1px solid rgba($base1, 0.5);
     outline-offset: -1px;
     background-color: transparent;
 }
 
 .terminal.focus .terminal-cursor.blinking {
-    animation: blink-cursor 1.2s infinite step-end;
+    animation: blink-cursor 1.4s infinite ease-in-out;
 }
 
 @keyframes blink-cursor {
     0% {
-        background-color: rgba(238, 232, 213, 0.5);
-        color: rgba(238, 232, 213, 1);
+        background-color: rgba($base1, 0.5);
+        color: rgba($base1, 1);
     }
     50% {
-        background-color: transparent;
-        color: rgba(238, 232, 213, 1);
+        background-color: rgba($base1, 0.2);
+        color: rgba($base1, 1);
     }
 }
 
 .terminal .composition-view {
-    background: #002b36;
-    color: #EEE8D5;
+    background: $base03;
+    color: $base1;
     display: none;
     position: absolute;
     white-space: nowrap;
@@ -75,7 +75,7 @@
 
 .terminal .xterm-viewport {
     /* On OS X this is required in order for the scroll bar to appear fully opaque */
-    background-color: #002b36;
+    background-color: $base03;
     overflow-y: scroll;
 }
 
@@ -121,59 +121,59 @@
 }
 
 .terminal .xterm-color-0 {
-    color: #2e3436;
+    color: $base02;
 }
 
 .terminal .xterm-bg-color-0 {
-    background-color: #2e3436;
+    background-color: $base02;
 }
 
 .terminal .xterm-color-1 {
-    color: #dc322f;
+    color: $red;
 }
 
 .terminal .xterm-bg-color-1 {
-    background-color: #dc322f;
+    background-color: $red;
 }
 
 .terminal .xterm-color-2 {
-    color: #859900;
+    color: $green;
 }
 
 .terminal .xterm-bg-color-2 {
-    background-color: #859900;
+    background-color: $green;
 }
 
 .terminal .xterm-color-3 {
-    color: #c4a000;
+    color: $yellow;
 }
 
 .terminal .xterm-bg-color-3 {
-    background-color: #c4a000;
+    background-color: $yellow;
 }
 
 .terminal .xterm-color-4 {
-    color: #268bd2;
+    color: $blue;
 }
 
 .terminal .xterm-bg-color-4 {
-    background-color: #268bd2;
+    background-color: $blue;
 }
 
 .terminal .xterm-color-5 {
-    color: #75507b;
+    color: $violet;
 }
 
 .terminal .xterm-bg-color-5 {
-    background-color: #75507b;
+    background-color: $violet;
 }
 
 .terminal .xterm-color-6 {
-    color: #06989a;
+    color: $cyan;
 }
 
 .terminal .xterm-bg-color-6 {
-    background-color: #06989a;
+    background-color: $cyan;
 }
 
 .terminal .xterm-color-7 {

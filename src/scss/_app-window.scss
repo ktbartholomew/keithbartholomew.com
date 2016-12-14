@@ -1,0 +1,73 @@
+.app-window {
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.15);
+  border: solid 1px rgba($base0, 0.5);
+  display: block;
+  height: 80vh;
+  left: 10vw;
+  position: fixed;
+  top: 10vh;
+  width: 80vw;
+
+  .title-bar {
+    background-color: $base02;
+    border-bottom: solid 1px rgba($base0, 0.5);
+    color: $base2;
+    display: -webkit-flex;
+    display: -moz-flex;
+    display: -ms-flex;
+    display: -o-flex;
+    display: flex;
+    height: 32px;
+    text-align: center;
+
+    .left {
+      flex: 0 0 20%;
+    }
+
+    .center {
+      flex: 0 0 60%;
+      font-size: 14px;
+      line-height: 32px;
+      overflow: hidden;
+      text-align: center;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .right {
+      flex: 0 0 20%;
+      text-align: right;
+
+      button {
+        background-color: transparent;
+        color: $base1;
+        cursor: pointer;
+        border: none;
+        display: inline-block;
+        font-size: 24px;
+        height: 32px;
+        transition: background-color 0.1s ease-out;
+        width: 32px;
+
+        &:hover, &:focus {
+          background-color: rgba($base1, 0.2);
+          outline: none;
+          transition: background-color 0.1s ease-in;
+        }
+      }
+    }
+  }
+
+  .body {
+    -webkit-background-size: contain;
+    background-color: $base02;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: 50% 50%;
+    display: block;
+    height: calc(100% - 33px);
+    overflow-y: auto;
+    transform: translateZ(0);
+    width: 100%;
+  }
+}
