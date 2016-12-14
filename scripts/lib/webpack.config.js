@@ -4,10 +4,13 @@ const webpack = require('webpack');
 var config = {
   context: __dirname,
   entry: {
-    index: path.resolve(__dirname, 'src/js/index.js')
+    index: path.resolve(__dirname, '../../src/js/index.js')
+  },
+  stats: {
+    chunks: false
   },
   output: {
-    path: path.resolve(__dirname, 'dist/js'),
+    path: path.resolve(__dirname, '../../dist/js'),
     filename: '[name].js'
   },
   plugins: []
