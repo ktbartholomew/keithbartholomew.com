@@ -1,23 +1,33 @@
 var React = require('react');
 var term = require('../lib/term');
+var OverlayStore = require('../lib/stores/overlay');
 
 class Overlays extends React.Component {
   constructor (props) {
     super(props);
 
+    this.state = {
+      window: null
+    };
+
     this.handlers = {
       closeWindow: function () {
-        this.setState({
-          window: null
-        });
-
+        OverlayStore.clearOverlay();
         term.focus();
-      }.bind(this)
+      }
     };
+
+    var changeListener = function (data) {
+      this.setState({
+        window: data
+      });
+    }.bind(this);
+
+    OverlayStore.addListener('change', changeListener);
   }
 
   render () {
-    var window = this.props.window || null;
+    var window = this.state.window || null;
 
     if (window === null) {
       return null;

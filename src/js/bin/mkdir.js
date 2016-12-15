@@ -11,5 +11,6 @@ module.exports = new Executable({
     }
 
     fs.write(path.resolve(os.getcwd(), arguments[1]), new Directory());
+    this.exit(0);
   }
 });

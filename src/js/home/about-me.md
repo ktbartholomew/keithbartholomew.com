@@ -15,6 +15,6 @@ particular order.
 
 ## Elsewhere on the web
 
-* Twitter: https://twitter.com/ktbartholomew
-* GitHub: https://github.com/ktbartholomew
-* Strava: https://www.strava.com/athletes/ktbartholomew
+* Twitter: [https://twitter.com/ktbartholomew](https://twitter.com/ktbartholomew)
+* GitHub: [https://github.com/ktbartholomew](https://github.com/ktbartholomew)
+* Strava: [https://www.strava.com/athletes/ktbartholomew](https://www.strava.com/athletes/ktbartholomew)

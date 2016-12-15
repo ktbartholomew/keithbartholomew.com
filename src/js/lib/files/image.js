@@ -2,7 +2,7 @@ var chalk = require('chalk');
 var File = require('./file');
 
 // Files have contents, that's about it
-var Image = function (options) {
+var ImageFile = function (options) {
   options.contents = chalk.red('Not a text file. Try using `view`.');
   File.call(this, options);
 
@@ -11,6 +11,6 @@ var Image = function (options) {
   });
 };
 
-Image.prototype = Object.create(File.prototype);
-Image.prototype.constructor = Image;
-module.exports = Image;
+ImageFile.prototype = Object.create(File.prototype);
+ImageFile.prototype.constructor = ImageFile;
+module.exports = ImageFile;

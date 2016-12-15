@@ -1,10 +1,14 @@
 @import "colors";
+
+$font-monospace: "source code pro", monaco, menlo, "courier new", courier, monospace;
+$font-sans: Helvetica, Arial, sans-serif;
+
 @import "xterm";
 @import "app-window";
 
 body, html {
   background: #002b36;
-  font-family: Helvetica, Arial, sans-serif;
+  font-family: $font-sans;
   font-size: 15px;
   margin: 0;
 }

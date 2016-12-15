@@ -2,11 +2,18 @@
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.15);
   border: solid 1px rgba($base0, 0.5);
   display: block;
-  height: 80vh;
-  left: 10vw;
+  height: 100vh;
+  left: 0vw;
   position: fixed;
-  top: 10vh;
-  width: 80vw;
+  top: 0vh;
+  width: 100vw;
+
+  @media (min-width: 800px) {
+    height: 80vh;
+    left: 10vw;
+    top: 10vh;
+    width: 80vw;
+  }
 
   .title-bar {
     background-color: $base02;
@@ -64,10 +71,37 @@
     background-size: contain;
     background-repeat: no-repeat;
     background-position: 50% 50%;
+    box-sizing: border-box;
     display: block;
     height: calc(100% - 33px);
     overflow-y: auto;
     transform: translateZ(0);
     width: 100%;
+
+    &.image img {
+      margin: 0 auto;
+      max-width: 100%;
+      max-height: calc(80vh - 33px);
+    }
+
+    &.plain, &.markdown {
+      background-color: $base3;
+      color: $base00;
+      font-size: 16px;
+    }
+
+    &.plain {
+      font-family: $font-monospace;
+      padding: 0.25em;
+      white-space: pre;
+    }
+
+    &.markdown {
+      padding: 1em;
+
+      @media (min-width: 1020px) {
+        padding: 1em calc(50% - 25em);
+      }
+    }
   }
 }

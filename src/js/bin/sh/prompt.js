@@ -1,5 +1,6 @@
 var term = require('../../lib/term');
 var os = require('../../lib/os');
+var io = require('../../lib/io');
 var chalk = require('chalk');
 var tabComplete = require('./tab-complete');
 
@@ -32,7 +33,7 @@ module.exports = {
     var drawPrompt = function () {
       term.x = 0;
       term.eraseLine(term.y);
-      term.write(PS1() + input.contents);
+      io.stdout.write(PS1() + input.contents);
       term.x = chalk.stripColor(PS1()).length + input.cursor;
 
       term.refresh(term.y + term.ybase, term.y + term.ybase + 1, false);
@@ -114,8 +115,7 @@ module.exports = {
               }
 
               if (result.multiple) {
-                term.writeln('');
-                term.writeln(result.string);
+                io.stdout.write('\r\n' + result.string + '\r\n');
                 drawPrompt();
               } else {
                 insertData(result.stringDelta);
@@ -138,8 +138,9 @@ module.exports = {
     };
 
     var endPrompt = function () {
-      term.writeln('');
       term.off('data', dataHandler);
+
+      io.stdout.write('\r\n');
       callback(input.contents);
     };
 

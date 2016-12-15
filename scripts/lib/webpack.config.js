@@ -16,7 +16,11 @@ var config = {
   module: {
     loaders: [
       {
-        test: /.jsx?$/,
+        test: /\.json$/,
+        loader: 'json'
+      },
+      {
+        test: /\.jsx?$/,
         loader: 'babel-loader',
         exclude: /node_modules/,
         query: {
@@ -29,6 +33,8 @@ var config = {
 };
 
 if (process.env.NODE_ENV === 'production') {
+  // replace "process.env.NODE_ENV" with "production" to avoid bundling all of
+  // the React devtools code
   config.plugins.push(
     new webpack.DefinePlugin({
       'process.env': {
@@ -37,6 +43,7 @@ if (process.env.NODE_ENV === 'production') {
     })
   );
 
+  // Drop unused code, mangle, and compress
   config.plugins.push(
     new webpack.optimize.UglifyJsPlugin({
       compress: {

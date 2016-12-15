@@ -1,6 +1,7 @@
 var Directory = require('./files/directory');
 var File = require('./files/file');
-var Image = require('./files/image');
+var ImageFile = require('./files/image');
+var MarkdownFile = require('./files/markdown');
 var os = require('./os');
 var fs = require('./fs');
 
@@ -13,6 +14,8 @@ module.exports = function () {
   fs.write('/sbin', new Directory());
   fs.write('/usr', new Directory());
   fs.write('/usr/bin', new Directory());
+  fs.write('/usr/local', new Directory());
+  fs.write('/usr/local/bin', new Directory());
   fs.write('/var', new Directory());
 
   fs.write('/bin/cat', require('../bin/cat'));
@@ -20,8 +23,10 @@ module.exports = function () {
   fs.write('/bin/ls', require('../bin/ls'));
   fs.write('/bin/pwd', require('../bin/pwd'));
   fs.write('/sbin/reboot', require('../sbin/reboot'));
+  fs.write('/bin/sleep', require('../bin/sleep'));
   fs.write('/bin/mkdir', require('../bin/mkdir'));
   fs.write('/bin/sh', require('../bin/sh'));
+  fs.write('/usr/local/bin/view', require('../bin/view'));
 
   fs.write('/etc/motd', new File({contents: require('raw!../etc/motd')}));
   fs.write('/etc/resolv.conf', new File({contents: require('raw!../etc/resolv.conf')}));
@@ -29,12 +34,12 @@ module.exports = function () {
   fs.write('/etc/shadow', new File({contents: require('raw!../etc/shadow')}));
   fs.write('/etc/group', new File({contents: require('raw!../etc/group')}));
   fs.write('/home/otheruser', new Directory());
-  fs.write('/home/website/help.md', new File({contents: require('raw!../home/help.md')}));
-  fs.write('/home/website/about-me.md', new File({contents: require('raw!../home/about-me.md')}));
+  fs.write('/home/website/help.md', new MarkdownFile({contents: require('raw!../home/help.md')}));
+  fs.write('/home/website/about-me.md', new MarkdownFile({contents: require('raw!../home/about-me.md')}));
   fs.write('/home/website/links', new Directory());
   fs.write('/home/website/photos', new Directory());
-  fs.write('/home/website/photos/keith.jpg', new Image({src: '/dist/img/keith.jpg'}));
+  fs.write('/home/website/photos/keith.jpg', new ImageFile({src: '/dist/img/keith.jpg'}));
 
-  os.exec('/bin/cat', '/etc/motd');
-  os.exec('/bin/sh');
+  os.exec(['/bin/cat', '/etc/motd']);
+  os.exec(['/bin/sh']);
 };

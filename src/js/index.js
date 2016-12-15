@@ -8,6 +8,6 @@ var Overlays = require('./components/overlays');
 chalk.enabled = true;
 
 ReactDOM.render(<Terminal />, document.querySelector('#terminal'));
-ReactDOM.render(<Overlays window={null} />, document.querySelector('#overlays'));
+ReactDOM.render(<Overlays />, document.querySelector('#overlays'));
 
 init();

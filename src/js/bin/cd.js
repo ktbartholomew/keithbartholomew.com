@@ -4,7 +4,6 @@ var chalk = require('chalk');
 
 module.exports = new Executable({
   main: function () {
-    var term = require('../lib/term');
     var os = require('../lib/os');
 
     var doChdir = function () {};
@@ -24,8 +23,10 @@ module.exports = new Executable({
 
     try {
       doChdir();
+      this.exit(0);
     } catch (e) {
-      term.writeln(chalk.red(e));
+      this.stderr.write(chalk.red(e) + '\r\n');
+      this.exit(1);
     }
   }
 });
