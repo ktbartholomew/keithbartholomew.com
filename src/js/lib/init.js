@@ -4,6 +4,7 @@ var ImageFile = require('./files/image');
 var MarkdownFile = require('./files/markdown');
 var os = require('./os');
 var fs = require('./fs');
+var fakeboot = require('./fakeboot');
 
 module.exports = function () {
   fs.write('/', new Directory());
@@ -40,6 +41,8 @@ module.exports = function () {
   fs.write('/home/website/photos', new Directory());
   fs.write('/home/website/photos/keith.jpg', new ImageFile({src: '/dist/img/keith.jpg'}));
 
-  os.exec(['/bin/cat', '/etc/motd']);
-  os.exec(['/bin/sh']);
+  fakeboot(function () {
+    os.exec(['/bin/cat', '/etc/motd']);
+    os.exec(['/bin/sh']);
+  });
 };
