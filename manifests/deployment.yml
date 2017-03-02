@@ -1,0 +1,18 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: os
+  namespace: os
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: os
+        role: frontend
+    spec:
+      containers:
+        - name: os
+          image: quay.io/ktbartholomew/os:latest
+          ports:
+            - containerPort: 80

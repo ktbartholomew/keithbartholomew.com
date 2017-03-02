@@ -1,0 +1,5 @@
+pipeline:
+  build:
+    image: node:6.9.5
+    commmands:
+      - npm test

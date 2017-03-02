@@ -1,0 +1,21 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: os
+  namespace: os
+  labels:
+    app: os
+  annotations:
+    kubernetes.io/tls-acme: "true"
+spec:
+  tls:
+  - secretName: os-tls
+    hosts:
+    - keithbartholomew.com
+  rules:
+  - host: keithbartholomew.com
+    http:
+      paths:
+      - backend:
+          serviceName: os
+          servicePort: 80
