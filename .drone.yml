@@ -2,4 +2,4 @@ pipeline:
   build:
     image: node:6.9.5
     commmands:
-      - npm test
+      - scripts/ci_build.sh
