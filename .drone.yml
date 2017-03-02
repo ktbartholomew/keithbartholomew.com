@@ -1,6 +1,15 @@
 pipeline:
   build:
     image: node:6.9.5
-    commmands:
+    environment:
+      - NPM_CONFIG_LOGLEVEL=warn
+      - NODE_ENV=production
+    commands:
       - npm install
-      - scripts/ci_build.sh
+      - scripts/build-frontend.sh
+
+  push:
+    image: plugins/docker
+    registry: quay.io
+    repo: quay.io/ktbartholomew/os
+    tags: latest

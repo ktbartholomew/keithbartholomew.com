@@ -1,6 +1,7 @@
 var fs = require('fs');
 var path = require('path');
 var sass = require('node-sass');
+var mkdirp = require('mkdirp');
 
 sass.render({
   file: path.resolve(__dirname, '../../src/scss/main.scss'),
@@ -10,5 +11,6 @@ sass.render({
     throw err;
   }
 
-  fs.writeFile(path.resolve(__dirname, '../../dist/css/main.css'), result.css, 'utf8');
+  mkdirp.sync(path.resolve(__dirname, '../../dist/css'));
+  fs.writeFileSync(path.resolve(__dirname, '../../dist/css/main.css'), result.css, 'utf8');
 });
