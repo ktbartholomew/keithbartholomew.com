@@ -11,5 +11,7 @@ pipeline:
   push:
     image: plugins/docker
     registry: quay.io
+    username: ${QUAY_USERNAME}
+    password: ${QUAY_PASSWORD}
     repo: quay.io/ktbartholomew/os
     tags: latest
