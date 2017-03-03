@@ -1,9 +1,4 @@
 pipeline:
-  test:
-    image: alpine:latest
-    commands:
-      - env
-
   build:
     image: node:6.9.5
     environment:
@@ -32,6 +27,6 @@ pipeline:
     commands:
       - echo "${KUBE_CA_DATA}" | base64 -d > /tmp/kube-cluster.ca
       - alias kubectl="kubectl --server ${KUBE_SERVER} --certificate-authority /tmp/kube-cluster.ca --token ${KUBE_TOKEN}"
-      - kubectl apply -f manifests/
+      - for f in manifests/*.yml; do scripts/template_manifest.sh $f | kubectl apply -f -; done
     when:
       branch: master
