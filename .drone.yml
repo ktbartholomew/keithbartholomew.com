@@ -1,4 +1,9 @@
 pipeline:
+  test:
+    image: alpine:latest
+    commands:
+      - env
+
   build:
     image: node:6.9.5
     environment:
