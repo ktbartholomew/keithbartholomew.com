@@ -3,6 +3,7 @@ var path = require('path-browserify');
 var chalk = require('chalk');
 
 module.exports = new Executable({
+  name: 'cd',
   main: function () {
     var os = require('../lib/os');
 

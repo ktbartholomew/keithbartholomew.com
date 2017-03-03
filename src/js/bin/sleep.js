@@ -1,6 +1,7 @@
 var Executable = require('../lib/files/executable');
 
 module.exports = new Executable({
+  name: 'sleep',
   main: function () {
     var sleepTime = parseInt(arguments[1]) || 0;
 

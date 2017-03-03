@@ -2,6 +2,7 @@ var Directory = require('./files/directory');
 var File = require('./files/file');
 var ImageFile = require('./files/image');
 var MarkdownFile = require('./files/markdown');
+var Hyperlink = require('./files/hyperlink');
 var os = require('./os');
 var fs = require('./fs');
 var fakeboot = require('./fakeboot');
@@ -28,6 +29,7 @@ module.exports = function () {
   fs.write('/bin/mkdir', require('../bin/mkdir'));
   fs.write('/bin/sh', require('../bin/sh'));
   fs.write('/usr/local/bin/view', require('../bin/view'));
+  fs.write('/usr/local/bin/open', require('../bin/open'));
 
   fs.write('/etc/motd', new File({contents: require('raw!../etc/motd')}));
   fs.write('/etc/resolv.conf', new File({contents: require('raw!../etc/resolv.conf')}));
@@ -40,6 +42,10 @@ module.exports = function () {
   fs.write('/home/website/links', new Directory());
   fs.write('/home/website/photos', new Directory());
   fs.write('/home/website/photos/keith.jpg', new ImageFile({src: '/dist/img/keith.jpg'}));
+  fs.write('/home/website/links/twitter.url', new Hyperlink({href: 'https://twitter.com/ktbartholomew'}));
+  fs.write('/home/website/links/github.url', new Hyperlink({href: 'https://github.com/ktbartholomew'}));
+  fs.write('/home/website/links/linkedin.url', new Hyperlink({href: 'https://www.linkedin.com/in/ktbartholomew'}));
+  fs.write('/home/website/links/strava.url', new Hyperlink({href: 'https://www.strava.com/athletes/ktbartholomew'}));
 
   fakeboot(function () {
     os.exec(['/bin/cat', '/etc/motd']);

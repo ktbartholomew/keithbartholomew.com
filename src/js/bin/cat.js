@@ -4,7 +4,14 @@ var os = require('../lib/os');
 var fs = require('../lib/fs');
 
 module.exports = new Executable({
+  name: 'cat',
   main: function () {
+    if (!arguments[1]) {
+      this.stderr.write('Usage: ' + this.name + ' [filename]\r\n');
+      this.exit(1);
+      return;
+    }
+
     var filePath = path.resolve(os.getcwd(), arguments[1]);
     var file = fs.read(filePath);
     var fileType = fs.stat(filePath).type;
@@ -12,6 +19,7 @@ module.exports = new Executable({
 
     switch (fileType) {
       case 'file':
+      default:
         lines = file.contents.split('\n');
         break;
       case 'executable':
