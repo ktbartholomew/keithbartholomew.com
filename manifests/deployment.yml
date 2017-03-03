@@ -10,6 +10,8 @@ spec:
       labels:
         app: os
         role: frontend
+      annotations:
+        gitCommit: ${DRONE_COMMIT_SHA:-0}
     spec:
       containers:
         - name: os
