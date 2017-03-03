@@ -4,6 +4,10 @@ var EventEmitter = require('events');
 module.exports = function (options) {
   var emitter = new EventEmitter();
 
+  Object.defineProperty(this, 'name', {
+    value: options.name
+  });
+
   Object.defineProperty(this, 'main', {
     value: options.main.bind(this)
   });

@@ -6,10 +6,12 @@ var os = require('../../lib/os');
 var getOverlay = require('./get-overlay');
 
 module.exports = new Executable({
+  name: 'view',
   main: function () {
     try {
       var pathToView = path.resolve(os.getcwd(), arguments[1]);
-      if (fs.stat(pathToView).type !== 'file') {
+      if (['image', 'file', 'markdown'].indexOf(fs.stat(pathToView).type) === -1) {
+        this.stderr.write('Unable to view file\r\n');
         return this.exit(1);
       }
     } catch (e) {

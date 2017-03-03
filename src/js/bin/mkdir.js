@@ -5,8 +5,11 @@ var fs = require('../lib/fs');
 var path = require('path-browserify');
 
 module.exports = new Executable({
+  name: 'mkdir',
   main: function () {
     if (!arguments[1]) {
+      this.stderr.write('Usage: ' + this.name + ' [directory]\r\n');
+      this.exit(1);
       return;
     }
 

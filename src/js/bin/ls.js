@@ -5,6 +5,7 @@ var fs = require('../lib/fs');
 var os = require('../lib/os');
 
 module.exports = new Executable({
+  name: 'ls',
   main: function () {
     var target = (arguments[1]) ? path.resolve(os.getcwd(), arguments[1]) : os.getcwd();
     var children = fs.scan(target);
@@ -20,6 +21,9 @@ module.exports = new Executable({
           break;
         case 'executable':
           children[i] = chalk.red(children[i]);
+          break;
+        case 'hyperlink':
+          children[i] = chalk.cyan(children[i]);
           break;
       }
     }

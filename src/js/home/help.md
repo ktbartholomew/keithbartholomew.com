@@ -7,7 +7,10 @@ then pressing enter to see the command’s output. For example, you just ran the
 
 Here are some other commands you can use:
 
+* “open”: open a text file, image, or hyperlink
 * “pwd”: show the name of the folder you’re currently in
-* “ls”: list the contents of a folder, or the folder you’re currently in.
+* “ls”: list the contents of a folder, or the folder you’re currently in
 * “cd”: move to another folder
 * “cat”: print the contents of a file
+* “sleep”: wait a certain number of seconds
+* “reboot”: “reboot” the website
