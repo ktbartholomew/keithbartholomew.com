@@ -14,5 +14,6 @@ spec:
       containers:
         - name: os
           image: quay.io/ktbartholomew/os:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 80

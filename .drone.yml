@@ -15,3 +15,18 @@ pipeline:
     password: ${QUAY_PASSWORD}
     repo: quay.io/ktbartholomew/os
     tags: latest
+    when:
+      branch: master
+
+  deploy:
+    image: quay.io/ktbartholomew/kubectl:1.5.2
+    environment:
+      - KUBE_SERVER=${KUBE_SERVER}
+      - KUBE_TOKEN=${KUBE_TOKEN}
+      - KUBE_CA_DATA=${KUBE_CA_DATA}
+    commands:
+      - echo "${KUBE_CA_DATA}" | base64 -d > /tmp/kube-cluster.ca
+      - alias kubectl="kubectl --server ${KUBE_SERVER} --certificate-authority /tmp/kube-cluster.ca --token ${KUBE_TOKEN}"
+      - kubectl apply -f manifests/
+    when:
+      branch: master
