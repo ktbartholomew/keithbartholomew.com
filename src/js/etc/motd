@@ -2,9 +2,9 @@
 # Welcome to KeithOS!
 # v1.0.0
 #
-# This is the personal (and very silly) website of Keith Bartholomew, a
-# full-stack web developer from Fort Worth, Texas. This is a faux Linux shell
-# made with JavaScript; type commands, play around, and have fun!
+# This is the personal website of Keith Bartholomew, a full-stack web developer
+# from Fort Worth, Texas. This is a JavaScript-powered Linux terminal, so type
+# commands, play around, and have fun!
 #
 # (Lost? Type `cat help.md` and press enter)
 #

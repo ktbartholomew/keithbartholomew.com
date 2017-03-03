@@ -3,6 +3,7 @@
 $font-monospace: "source code pro", monaco, menlo, "courier new", courier, monospace;
 $font-sans: Helvetica, Arial, sans-serif;
 
+@import "nojs";
 @import "xterm";
 @import "app-window";
 
