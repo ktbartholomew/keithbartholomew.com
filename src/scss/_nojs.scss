@@ -1,0 +1,20 @@
+#nojs {
+  background-color: $base03;
+  color: $base1;
+  font-family: $font-monospace;
+  font-feature-settings: "liga" 0;
+  max-width: 50em;
+  padding: 0 0.25em;
+
+  h1,h2,h3,h4,h5,h6 {
+    font-weight: normal;
+  }
+
+  a {
+    color: $blue;
+  }
+
+  p + p {
+    margin-top: 2em;
+  }
+}
