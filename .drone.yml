@@ -17,6 +17,7 @@ pipeline:
     tags: latest
     when:
       branch: master
+      event: [push, tag, deployment]
 
   deploy:
     image: quay.io/ktbartholomew/kubectl:1.5.2
@@ -30,3 +31,4 @@ pipeline:
       - kubectl apply -f manifests/
     when:
       branch: master
+      event: [push, tag, deployment]
