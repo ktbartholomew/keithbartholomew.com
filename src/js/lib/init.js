@@ -40,12 +40,17 @@ module.exports = function () {
   fs.write('/home/website/help.md', new MarkdownFile({contents: require('raw!../home/help.md')}));
   fs.write('/home/website/about-me.md', new MarkdownFile({contents: require('raw!../home/about-me.md')}));
   fs.write('/home/website/links', new Directory());
-  fs.write('/home/website/photos', new Directory());
-  fs.write('/home/website/photos/keith.jpg', new ImageFile({src: '/dist/img/keith.jpg'}));
   fs.write('/home/website/links/twitter.url', new Hyperlink({href: 'https://twitter.com/ktbartholomew'}));
   fs.write('/home/website/links/github.url', new Hyperlink({href: 'https://github.com/ktbartholomew'}));
   fs.write('/home/website/links/linkedin.url', new Hyperlink({href: 'https://www.linkedin.com/in/ktbartholomew'}));
   fs.write('/home/website/links/strava.url', new Hyperlink({href: 'https://www.strava.com/athletes/ktbartholomew'}));
+  fs.write('/home/website/photos', new Directory());
+  fs.write('/home/website/photos/keith.jpg', new ImageFile({src: '/dist/img/keith.jpg'}));
+  fs.write('/home/website/portfolio', new Directory());
+  fs.write('/home/website/portfolio/carina', new Directory());
+  fs.write('/home/website/portfolio/carina/carina.md', new MarkdownFile({contents: require('raw!../home/portfolio/carina/carina.md')}));
+  fs.write('/home/website/portfolio/carina/carina.jpg', new ImageFile({src: '/dist/img/portfolio/carina/carina.jpg'}));
+  fs.write('/home/website/portfolio/carina/carina-ui.jpg', new ImageFile({src: '/dist/img/portfolio/carina/carina-ui.jpg'}));
 
   fakeboot(function () {
     os.exec(['/bin/cat', '/etc/motd']);
