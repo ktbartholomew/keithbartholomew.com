@@ -6,7 +6,7 @@ metadata:
   labels:
     app: os
   annotations:
-    kubernetes.io/tls-acme: "true"
+    kubernetes.io/tls-acme: \"true\"
 spec:
   tls:
   - secretName: os-tls
