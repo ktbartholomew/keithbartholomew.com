@@ -20,7 +20,7 @@ module.exports = function (options) {
 
   if (options.file instanceof MarkdownFile) {
     overlayConfig.type = 'markdown';
-    overlayConfig.body = <ReactMarkdown source={options.file.contents} escapeHtml />;
+    overlayConfig.body = <ReactMarkdown source={options.file.contents} escapeHtml={options.file.escapeHtml} />;
 
     return overlayConfig;
   }
