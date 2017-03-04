@@ -85,8 +85,8 @@
     }
 
     &.plain, &.markdown {
-      background-color: $base3;
-      color: $base00;
+      background-color: $markdown-base;
+      color: $markdown-color;
       font-size: 16px;
     }
 
@@ -98,6 +98,18 @@
 
     &.markdown {
       padding: 1em;
+
+      h1, h2, h3, h4, h5, h6 {
+        font-weight: normal;
+      }
+
+      p {
+        margin: 0;
+      }
+
+      p + p {
+        margin-top: 2em;
+      }
 
       @media (min-width: 1020px) {
         padding: 1em calc(50% - 25em);
