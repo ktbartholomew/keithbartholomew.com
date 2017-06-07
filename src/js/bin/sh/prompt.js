@@ -3,6 +3,7 @@ var os = require('../../lib/os');
 var io = require('../../lib/io');
 var chalk = require('chalk');
 var tabComplete = require('./tab-complete');
+var history = require('./history');
 
 module.exports = {
   prompt: function (callback) {
@@ -45,10 +46,28 @@ module.exports = {
 
       Array.prototype.splice.apply(contents, [input.cursor, 0].concat(addition));
 
-      input.contents = contents.join('');
-      input.cursor += addition.length;
+      setInput(contents.join(''), input.cursor + addition.length);
       drawPrompt();
     };
+
+    var setInput = function (data, cursor, updateScratchpad) {
+      if (typeof cursor !== 'number') {
+        cursor = data.length;
+      } else {
+        cursor = Math.floor(cursor);
+      }
+
+      updateScratchpad = (typeof updateScratchpad !== 'boolean') ? true : false;
+
+      if (updateScratchpad) {
+        history.SetScratchpad(data);
+      }
+      
+      input.contents = data;
+      input.cursor = cursor;
+
+      drawPrompt();
+    }
 
     var backspace = function () {
       var contents = input.contents.split('');
@@ -76,6 +95,16 @@ module.exports = {
 
       if (bytes[0] === 27 && bytes[1] === 91) {
         switch (bytes[2]) {
+          case 65:
+            history.Previous((err, data) => {
+              setInput(data, null, false);
+            });
+            break;
+          case 66:
+            history.Next((err, data) => {
+              setInput(data, null, false);
+            });
+            break;
           case 67:
             cursor.right();
             break;
@@ -139,7 +168,8 @@ module.exports = {
 
     var endPrompt = function () {
       term.off('data', dataHandler);
-
+      
+      history.Append(input.contents);
       io.stdout.write('\r\n');
       callback(input.contents);
     };
