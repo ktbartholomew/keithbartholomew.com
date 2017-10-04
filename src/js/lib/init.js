@@ -23,11 +23,13 @@ module.exports = function () {
   fs.write('/bin/cat', require('../bin/cat'));
   fs.write('/usr/bin/cd', require('../bin/cd'));
   fs.write('/bin/ls', require('../bin/ls'));
+  fs.write('/bin/ps', require('../bin/ps'));
   fs.write('/bin/pwd', require('../bin/pwd'));
   fs.write('/sbin/reboot', require('../sbin/reboot'));
   fs.write('/bin/sleep', require('../bin/sleep'));
   fs.write('/bin/mkdir', require('../bin/mkdir'));
   fs.write('/bin/sh', require('../bin/sh'));
+  fs.write('/usr/bin/whoami', require('../bin/whoami'));
   fs.write('/usr/local/bin/view', require('../bin/view'));
   fs.write('/usr/local/bin/open', require('../bin/open'));
 

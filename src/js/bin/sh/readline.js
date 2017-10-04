@@ -39,8 +39,7 @@ module.exports = function () {
   };
 
   var handleInput = function (input) {
-    // debugger;
-    if (input === '') {
+    if (input.trim() === '') {
       return prompt.prompt(handleInput);
     }
 
