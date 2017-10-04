@@ -1,14 +1,14 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: os
-  namespace: os
+  name: keithbartholomew
+  namespace: keithbartholomew
   labels:
-    app: os
+    app: keithbartholomew
 spec:
   ports:
   - port: 80
     protocol: TCP
   selector:
-    app: os
+    app: keithbartholomew
     role: frontend

@@ -1,20 +1,20 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: os
-  namespace: os
+  name: keithbartholomew
+  namespace: keithbartholomew
 spec:
   replicas: 3
   template:
     metadata:
       labels:
-        app: os
+        app: keithbartholomew
         role: frontend
       annotations:
         gitCommit: ${DRONE_COMMIT_SHA:-0}
     spec:
       containers:
-        - name: os
+        - name: keithbartholomew
           image: quay.io/ktbartholomew/os:latest
           imagePullPolicy: Always
           ports:
