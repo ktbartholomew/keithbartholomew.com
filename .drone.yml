@@ -7,22 +7,7 @@ pipeline:
     commands:
       - npm install
       - scripts/build-frontend.sh
-
-  push:
-    image: plugins/docker
-    registry: quay.io
-    repo: quay.io/ktbartholomew/keithbartholomew.com
-    secrets:
-      - docker_username
-      - docker_password
-    tags: "${DRONE_COMMIT_SHA}"
-    when:
-      branch:
-        exclude:
-          - master
-      event: [push, tag, deployment]
-
-    push_latest:
+    push:
       image: plugins/docker
       registry: quay.io
       repo: quay.io/ktbartholomew/keithbartholomew.com
