@@ -10,12 +10,9 @@ spec:
       labels:
         app: keithbartholomew
         role: frontend
-      annotations:
-        gitCommit: ${DRONE_COMMIT_SHA:-0}
     spec:
       containers:
         - name: keithbartholomew
-          image: quay.io/ktbartholomew/os:latest
-          imagePullPolicy: Always
+          image: quay.io/ktbartholomew/keithbartholomew.com:latest
           ports:
             - containerPort: 80
