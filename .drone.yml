@@ -17,4 +17,21 @@ pipeline:
       - docker_password
     tags: "${DRONE_COMMIT_SHA:0:8}"
     when:
+      branch:
+        exclude:
+          - master
       event: [push, tag, deployment]
+
+    push_latest:
+      image: plugins/docker
+      registry: quay.io
+      repo: quay.io/ktbartholomew/keithbartholomew.com
+      secrets:
+        - docker_username
+        - docker_password
+      tags:
+        - "latest"
+        - "${DRONE_COMMIT_SHA:0:8}"
+      when:
+        branch: master
+        event: [push, tag, deployment]
