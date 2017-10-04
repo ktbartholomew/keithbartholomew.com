@@ -7,28 +7,16 @@ pipeline:
     commands:
       - npm install
       - scripts/build-frontend.sh
-
   push:
     image: plugins/docker
     registry: quay.io
-    username: ${QUAY_USERNAME}
-    password: ${QUAY_PASSWORD}
-    repo: quay.io/ktbartholomew/os
-    tags: latest
-    when:
-      branch: master
-      event: [push, tag, deployment]
-
-  deploy:
-    image: quay.io/ktbartholomew/kubectl:1.5.2
-    environment:
-      - KUBE_SERVER=${KUBE_SERVER}
-      - KUBE_TOKEN=${KUBE_TOKEN}
-      - KUBE_CA_DATA=${KUBE_CA_DATA}
-    commands:
-      - echo "${KUBE_CA_DATA}" | base64 -d > /tmp/kube-cluster.ca
-      - alias kubectl="kubectl --server ${KUBE_SERVER} --certificate-authority /tmp/kube-cluster.ca --token ${KUBE_TOKEN}"
-      - for f in manifests/*.yml; do sh scripts/template_manifest.sh $f | kubectl apply -f -; done
+    repo: quay.io/ktbartholomew/keithbartholomew.com
+    secrets:
+      - docker_username
+      - docker_password
+    tags:
+      - "latest"
+      - "${DRONE_COMMIT_SHA}"
     when:
       branch: master
       event: [push, tag, deployment]

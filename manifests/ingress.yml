@@ -1,15 +1,15 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: os
-  namespace: os
+  name: keithbartholomew
+  namespace: keithbartholomew
   labels:
-    app: os
+    app: keithbartholomew
   annotations:
-    kubernetes.io/tls-acme: \"true\"
+    kubernetes.io/tls-acme: "true"
 spec:
   tls:
-  - secretName: os-tls
+  - secretName: keithbartholomew-tls
     hosts:
     - keithbartholomew.com
   rules:
@@ -17,5 +17,5 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: os
+          serviceName: keithbartholomew
           servicePort: 80
