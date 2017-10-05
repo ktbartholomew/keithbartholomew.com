@@ -44,7 +44,7 @@ pipeline:
       status: failure
   hangouts_failure_notify:
     image: appleboy/drone-gtalk
-    # google_host: talk.google.com:443
+    google_host: talk.google.com:443
     google_username: ${HANGOUTS_USERNAME}
     google_password: ${HANGOUTS_PASSWORD}
     to: ${HANGOUTS_RECIPIENT}
