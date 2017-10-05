@@ -44,7 +44,6 @@ pipeline:
       status: failure
   failure_notify:
     image: raarts/netutils
-    entrypoint: /bin/bash
     commands:
       - env
       - echo $MAILGUN_DOMAIN
