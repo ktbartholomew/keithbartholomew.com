@@ -26,4 +26,33 @@ pipeline:
       - kubeconfig
     commands:
       - echo "$KUBECONFIG" > /kubeconfig
-      - kubectl --kubeconfig /kubeconfig get deployments -n keithbartholomew
+      - kubectl --kubeconfig /kubeconfig -n keithbartholomew set image deployment/keithbartholomew keithbartholomew=quay.io/ktbartholomew/keithbartholomew.com:${DRONE_COMMIT_SHA} --record
+      - kubectl --kubeconfig /kubeconfig -n keithbartholomew rollout status deployment/keithbartholomew
+    when:
+      branch: master
+      event: [push, tag, deployment]
+  kube_deploy_undo:
+    image: gcr.io/google_containers/hyperkube:v1.7.5
+    secrets:
+      - kubeconfig
+    commands:
+      - echo "$KUBECONFIG" > /kubeconfig
+      - kubectl --kubeconfig /kubeconfig -n keithbartholomew rollout undo deployment/keithbartholomew
+    when:
+      branch: master
+      event: [push, tag, deployment]
+      status: failure
+  hangouts_failure_notify:
+    image: appleboy/drone-gtalk
+    # google_host: talk.google.com:443
+    google_username: ${HANGOUTS_USERNAME}
+    google_password: ${HANGOUTS_PASSWORD}
+    to: ${HANGOUTS_RECIPIENT}
+    secrets:
+      - hangouts_recipient
+      - hangouts_username
+      - hangouts_password
+    # when:
+    #   branch: master
+    #   event: [push, tag, deployment]
+    #   status: failure
