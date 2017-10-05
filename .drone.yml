@@ -52,7 +52,7 @@ pipeline:
       - email_recipient
       - mailgun_apikey
       - mailgun_domain
-    # when:
-    #   branch: master
-    #   event: [push, tag, deployment]
-    #   status: failure
+    when:
+      branch: master
+      event: [push, tag, deployment]
+      status: failure
