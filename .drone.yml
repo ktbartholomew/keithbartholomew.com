@@ -46,8 +46,9 @@ pipeline:
     image: raarts/netutils
     commands:
       - env
+      - echo ${MAILGUN_DOMAIN}
       - >
-        curl -s --user "api:${MAILGUN_APIKEY}" -XPOST \
+        curl -sv --user "api:${MAILGUN_APIKEY}" -XPOST \
         -F "from=Drone <postmaster@${MAILGUN_DOMAIN}>" \
         -F "to=${EMAIL_RECIPIENT}" \
         -F "subject=WARNING: drone build failed" \
