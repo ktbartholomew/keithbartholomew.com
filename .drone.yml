@@ -48,10 +48,10 @@ pipeline:
       - env
       - echo $MAILGUN_DOMAIN
       - >
-        curl -sv --user "api:${MAILGUN_APIKEY}" -XPOST \
-        https://api.mailgun.net/v3/${MAILGUN_DOMAIN}/messages \
-        -F "from=Drone <postmaster@${MAILGUN_DOMAIN}>" \
-        -F "to=${EMAIL_RECIPIENT}" \
+        curl -sv --user "api:$MAILGUN_APIKEY" -XPOST \
+        https://api.mailgun.net/v3/$MAILGUN_DOMAIN/messages \
+        -F "from=Drone <postmaster@$MAILGUN_DOMAIN>" \
+        -F "to=$EMAIL_RECIPIENT" \
         -F "subject=WARNING: drone build failed" \
         -F "text=this is a test from drone. good luck!"
     secrets:
