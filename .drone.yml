@@ -44,16 +44,17 @@ pipeline:
       status: failure
   failure_notify:
     image: raarts/netutils
+    entrypoint: /bin/bash
     commands:
       - env
-      - echo ${MAILGUN_DOMAIN}
+      - echo $MAILGUN_DOMAIN
       - >
         curl -sv --user "api:${MAILGUN_APIKEY}" -XPOST \
+        https://api.mailgun.net/v3/${MAILGUN_DOMAIN}/messages \
         -F "from=Drone <postmaster@${MAILGUN_DOMAIN}>" \
         -F "to=${EMAIL_RECIPIENT}" \
         -F "subject=WARNING: drone build failed" \
-        -F "text=this is a test from drone. good luck!" \
-        https://api.mailgun.net/v3/${MAILGUN_DOMAIN}/messages
+        -F "text=this is a test from drone. good luck!"
     secrets:
       - email_recipient
       - mailgun_apikey
