@@ -46,13 +46,7 @@ pipeline:
     image: raarts/netutils
     commands:
       - env
-      - |
-        curl -s --user "api:${MAILGUN_APIKEY}" -XPOST \
-        -F "from=Drone <postmaster@${MAILGUN_DOMAIN}>" \
-        -F "to=${EMAIL_RECIPIENT}" \
-        -F "subject=WARNING: drone build failed" \
-        -F "text=this is a test from drone. good luck!" \
-        https://api.mailgun.net/v3/${MAILGUN_DOMAIN}/messages
+      - curl -s --user "api:${MAILGUN_APIKEY}" -XPOST -F "from=Drone <postmaster@${MAILGUN_DOMAIN}>" -F "to=${EMAIL_RECIPIENT}" -F "subject=WARNING: drone build failed" -F "text=this is a test from drone. good luck!" https://api.mailgun.net/v3/${MAILGUN_DOMAIN}/messages
     secrets:
       - email_recipient
       - mailgun_apikey
