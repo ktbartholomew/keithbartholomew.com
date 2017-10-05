@@ -5,6 +5,7 @@ metadata:
   namespace: keithbartholomew
 spec:
   replicas: 3
+  progressDeadlineSeconds: 180  
   template:
     metadata:
       labels:
