@@ -3,7 +3,7 @@ var fs = require('./fs');
 var env = {
   HOME: '/home/website',
   PATH: '/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin',
-  PWD: '/home/website',
+  PWD: '/home/website' + window.location.pathname,
   SHLVL: '1',
   TERM: 'xterm',
   USER: 'website'
@@ -24,6 +24,8 @@ module.exports = {
     }
 
     env.PWD = cwd = dir;
+
+    updateLocation(env.PWD);
   },
   exec: function (argv, callback) {
     callback = callback || function () {};
@@ -43,3 +45,22 @@ module.exports = {
     executable.main.apply(undefined, argv);
   }
 };
+
+var updateLocation = function (dir) {
+  if (!env.PWD.startsWith(env.HOME) || env.PWD === env.HOME) {
+    window.history.pushState({PWD: env.PWD}, '', '/');
+    return;
+  }
+
+  window.history.pushState({PWD: env.PWD}, '', env.PWD.replace(env.HOME, ''));
+};
+
+var onLocationChange = function (e) {
+  if (!e.state.hasOwnProperty('PWD')) {
+    return;
+  }
+
+  module.exports.chdir(e.state.PWD);
+};
+
+window.addEventListener('popstate', onLocationChange);
