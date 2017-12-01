@@ -4,6 +4,7 @@ set -ueo pipefail
 
 scriptroot="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+cp ${scriptroot}/../index.html ${scriptroot}/../dist/index.html
 node ${scriptroot}/lib/webpack.js
 node ${scriptroot}/lib/sass.js
 
