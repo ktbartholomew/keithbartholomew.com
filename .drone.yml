@@ -1,11 +1,9 @@
 pipeline:
   test:
-    image: docker
+    image: node:8.9.1
     commands:
-      - docker info
-      - docker build -t quay.io/ktbartholomew/keithbartholomew.com:${DRONE_COMMIT_SHA} .
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - npm install
+      - scripts/build-frontend.sh
   push:
     image: plugins/docker
     registry: quay.io
