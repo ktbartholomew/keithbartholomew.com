@@ -1,6 +1,6 @@
 pipeline:
   test:
-    image: plugins/docker
+    image: docker
     commands:
       - docker build -t quay.io/ktbartholomew/keithbartholomew.com:${DRONE_COMMIT_SHA} .
   push:
