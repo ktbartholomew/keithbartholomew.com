@@ -4,6 +4,8 @@ pipeline:
     commands:
       - docker info
       - docker build -t quay.io/ktbartholomew/keithbartholomew.com:${DRONE_COMMIT_SHA} .
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
   push:
     image: plugins/docker
     registry: quay.io
