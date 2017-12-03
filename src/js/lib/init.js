@@ -23,6 +23,7 @@ module.exports = function () {
   fs.write('/bin/cat', require('../bin/cat'));
   fs.write('/usr/bin/cd', require('../bin/cd'));
   fs.write('/bin/ls', require('../bin/ls'));
+  fs.write('/bin/motd', require('../bin/motd'));
   fs.write('/bin/ps', require('../bin/ps'));
   fs.write('/bin/pwd', require('../bin/pwd'));
   fs.write('/sbin/reboot', require('../sbin/reboot'));
@@ -62,7 +63,7 @@ module.exports = function () {
   fs.write('/home/website/portfolio/skywriter/index.md', new MarkdownFile({contents: require('raw!../home/portfolio/skywriter/index.md'), escapeHtml: false}));
 
   fakeboot(function () {
-    os.exec(['/bin/cat', '/etc/motd']);
+    os.exec(['/bin/motd']);
     os.exec(['/bin/sh']);
   });
 };

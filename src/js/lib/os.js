@@ -1,4 +1,6 @@
+// @ts-check
 var fs = require('./fs');
+var path = require('path-browserify');
 
 var env = {
   HOME: '/home/website',
@@ -18,14 +20,20 @@ module.exports = {
   getcwd: function () {
     return cwd;
   },
-  chdir: function (dir) {
+  /**
+   * @param {string} dir
+   * @param {boolean} [skipUpdate]
+   */
+  chdir: function (dir, skipUpdate) {
     if (fs.stat(dir).type !== 'directory') {
       throw new Error(dir + ': Not a directory');
     }
 
     env.PWD = cwd = dir;
 
-    updateLocation(env.PWD);
+    if (!skipUpdate) {
+      updateLocation(env.PWD);
+    }
   },
   exec: function (argv, callback) {
     callback = callback || function () {};
@@ -56,11 +64,7 @@ var updateLocation = function (dir) {
 };
 
 var onLocationChange = function (e) {
-  if (!e.state.hasOwnProperty('PWD')) {
-    return;
-  }
-
-  module.exports.chdir(e.state.PWD);
+  module.exports.chdir(path.resolve(env.HOME, e.target.location.pathname), true);
 };
 
 window.addEventListener('popstate', onLocationChange);
