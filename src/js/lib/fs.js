@@ -1,7 +1,5 @@
 var filesystem = {};
 
-window.filesystem = filesystem;
-
 var FILE_TYPES = {
   DIRECTORY: require('./files/directory'),
   EXECUTABLE: require('./files/executable'),

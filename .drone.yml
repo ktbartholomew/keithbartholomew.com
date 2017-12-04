@@ -1,9 +1,8 @@
 pipeline:
-  build:
-    image: node:6.9.5
+  test:
+    image: node:8.9.1
     environment:
       - NPM_CONFIG_LOGLEVEL=warn
-      - NODE_ENV=production
     commands:
       - npm install
       - scripts/build-frontend.sh
@@ -11,6 +10,8 @@ pipeline:
     image: plugins/docker
     registry: quay.io
     repo: quay.io/ktbartholomew/keithbartholomew.com
+    environment:
+      - NPM_CONFIG_LOGLEVEL=warn
     secrets:
       - docker_username
       - docker_password

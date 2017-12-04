@@ -57,17 +57,17 @@ module.exports = {
         cursor = Math.floor(cursor);
       }
 
-      updateScratchpad = (typeof updateScratchpad !== 'boolean') ? true : false;
+      updateScratchpad = (typeof updateScratchpad !== 'boolean');
 
       if (updateScratchpad) {
         history.SetScratchpad(data);
       }
-      
+
       input.contents = data;
       input.cursor = cursor;
 
       drawPrompt();
-    }
+    };
 
     var backspace = function () {
       var contents = input.contents.split('');
@@ -96,64 +96,64 @@ module.exports = {
       if (bytes[0] === 27 && bytes[1] === 91) {
         switch (bytes[2]) {
           case 65:
-            history.Previous((err, data) => {
-              setInput(data, null, false);
-            });
-            break;
+          history.Previous((e, data) => {
+            setInput(data, null, false);
+          });
+          break;
           case 66:
-            history.Next((err, data) => {
-              setInput(data, null, false);
-            });
-            break;
+          history.Next((e, data) => {
+            setInput(data, null, false);
+          });
+          break;
           case 67:
-            cursor.right();
-            break;
+          cursor.right();
+          break;
           case 68:
-            cursor.left();
-            break;
+          cursor.left();
+          break;
           case 70:
-            cursor.end();
-            break;
+          cursor.end();
+          break;
           case 72:
-            cursor.home();
-            break;
+          cursor.home();
+          break;
         }
       }
 
       if (bytes[0] < 32) {
         switch (bytes[0]) {
           case 1:
-            cursor.home();
-            break;
+          cursor.home();
+          break;
           case 2:
-            cursor.left();
-            break;
+          cursor.left();
+          break;
           case 5:
-            cursor.end();
-            break;
+          cursor.end();
+          break;
           case 6:
-            cursor.right();
-            break;
+          cursor.right();
+          break;
           case 7:
-            term.bell();
-            break;
+          term.bell();
+          break;
           case 9:
-            tabComplete(input, function (err, result) {
-              if (err) {
-                throw err;
-              }
+          tabComplete(input, function (err, result) {
+            if (err) {
+              throw err;
+            }
 
-              if (result.multiple) {
-                io.stdout.write('\r\n' + result.string + '\r\n');
-                drawPrompt();
-              } else {
-                insertData(result.stringDelta);
-              }
-            });
-            break;
+            if (result.multiple) {
+              io.stdout.write('\r\n' + result.string + '\r\n');
+              drawPrompt();
+            } else {
+              insertData(result.stringDelta);
+            }
+          });
+          break;
           case 13:
-            endPrompt();
-            break;
+          endPrompt();
+          break;
         }
 
         return;
@@ -168,7 +168,7 @@ module.exports = {
 
     var endPrompt = function () {
       term.off('data', dataHandler);
-      
+
       history.Append(input.contents);
       io.stdout.write('\r\n');
       callback(input.contents);
@@ -176,5 +176,11 @@ module.exports = {
 
     term.on('data', dataHandler);
     drawPrompt();
+
+    // redraw the prompt if the location changes, to reflect the new working
+    // directory
+    window.addEventListener('popstate', function (e) {
+      drawPrompt();
+    });
   }
 };
