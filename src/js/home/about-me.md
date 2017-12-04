@@ -9,7 +9,7 @@ with three.js to building extensive admin UIs full of complex business logic.
 
 ## Other things I do
 
-I’m an avid cyclist, riding well over 2,000 miles/year. I love to cook, but
+I’m an avid cyclist, riding well over 6,000 miles/year. I love to cook, but
 don’t really like baking. I’m fond of fine whiskeys, wines, and coffees—in no
 particular order.
 
