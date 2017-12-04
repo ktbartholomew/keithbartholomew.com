@@ -96,12 +96,12 @@ module.exports = {
       if (bytes[0] === 27 && bytes[1] === 91) {
         switch (bytes[2]) {
           case 65:
-          history.Previous((err, data) => {
+          history.Previous((e, data) => {
             setInput(data, null, false);
           });
           break;
           case 66:
-          history.Next((err, data) => {
+          history.Next((e, data) => {
             setInput(data, null, false);
           });
           break;

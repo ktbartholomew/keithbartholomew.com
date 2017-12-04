@@ -2,23 +2,12 @@
 var fs = require('./fs');
 var path = require('path-browserify');
 
-var env = {
-  HOME: '/home/website',
-  PATH: '/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin',
-  PWD: '/home/website' + window.location.pathname,
-  SHLVL: '1',
-  TERM: 'xterm',
-  USER: 'website'
-};
-
-var cwd = env.PWD;
-
 module.exports = {
   getenv: function () {
     return env;
   },
   getcwd: function () {
-    return cwd;
+    return env.PWD;
   },
   /**
    * @param {string} dir
@@ -29,7 +18,7 @@ module.exports = {
       throw new Error(dir + ': Not a directory');
     }
 
-    env.PWD = cwd = dir;
+    env.PWD = dir;
 
     if (!skipUpdate) {
       updateLocation(env.PWD);
@@ -54,6 +43,14 @@ module.exports = {
   }
 };
 
+var normalizePath = function (p) {
+  if (p.endsWith('/')) {
+    return p.slice(0, -1);
+  }
+
+  return p;
+};
+
 var updateLocation = function (dir) {
   if (!env.PWD.startsWith(env.HOME) || env.PWD === env.HOME) {
     window.history.pushState({PWD: env.PWD}, '', '/');
@@ -66,5 +63,13 @@ var updateLocation = function (dir) {
 var onLocationChange = function (e) {
   module.exports.chdir(path.resolve(env.HOME, e.target.location.pathname), true);
 };
-
 window.addEventListener('popstate', onLocationChange);
+
+var env = {
+  HOME: '/home/website',
+  PATH: '/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin',
+  PWD: '/home/website' + normalizePath(window.location.pathname),
+  SHLVL: '1',
+  TERM: 'xterm',
+  USER: 'website'
+};

@@ -2,7 +2,7 @@
 
 [https://developer.rackspace.com](https://developer.rackspace.com)
 
-![Rackspace Developer Portal](/dist/img/portfolio/developer.rackspace.com/developer.rackspace.com.jpg)
+![Rackspace Developer Portal](/img/portfolio/developer.rackspace.com/developer.rackspace.com.jpg)
 
 The deceptively simple Rackspace developer portal is actually the front-end for the expansive, purpose-built content management system we created, [deconst](https://github.com/deconst). Deconst allows content writers to use existing documentation tools like Sphinx and Jekyll (or whatever else they want) to _create_ content, then separately allows site administrators to define how that content is presented as part of a larger website, or multiple websites.
 
