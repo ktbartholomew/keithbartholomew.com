@@ -31,8 +31,9 @@ module.exports = function () {
   fs.write('/bin/mkdir', require('../bin/mkdir'));
   fs.write('/bin/sh', require('../bin/sh'));
   fs.write('/usr/bin/whoami', require('../bin/whoami'));
-  fs.write('/usr/local/bin/view', require('../bin/view'));
+  fs.write('/usr/local/bin/gh', require('../bin/gh'));
   fs.write('/usr/local/bin/open', require('../bin/open'));
+  fs.write('/usr/local/bin/view', require('../bin/view'));
 
   fs.write('/etc/motd', new File({contents: require('raw!../etc/motd')}));
   fs.write('/etc/resolv.conf', new File({contents: require('raw!../etc/resolv.conf')}));
