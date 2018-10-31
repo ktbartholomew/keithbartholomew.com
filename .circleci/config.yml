@@ -2,12 +2,20 @@ version: 2
 jobs:
   test:
     docker:
-      - image: node:8.9.1
+      - image: circleci/node:8.9.1
     working_directory: /workspace
     steps:
       - checkout
       - run: npm install
       - run: scripts/build-frontend.sh
+  push:
+    docker:
+      - image: circleci/node:8.9.1
+    working_directory: /workspace
+    steps:
+      - run: pwd
+      - run: ls -al
+      - run: env
 workflows:
   version: 2
   test:
