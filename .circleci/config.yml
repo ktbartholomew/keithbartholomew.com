@@ -17,6 +17,8 @@ jobs:
       - image: circleci/node:8.9.1
     working_directory: ~/workspace
     steps:
+      - attach_workspace:
+          at: ~/workspace/dist
       - run: pwd
       - run: ls -al
       - run: env
