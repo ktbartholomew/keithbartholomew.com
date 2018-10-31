@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  test:
+  pretest:
     docker:
       - image: circleci/node:8.9.1
     working_directory: ~/workspace
@@ -8,30 +8,37 @@ jobs:
       - checkout
       - run: npm install
       - run: scripts/build-frontend.sh
-      - persist_to_workspace:
-          root: ~/workspace
-          paths:
-            - dist
-  push:
+  publish_image:
     docker:
       - image: circleci/node:8.9.1
     working_directory: ~/workspace
     steps:
       - checkout
-      - setup_remote_docker
-      - attach_workspace:
-          at: ~/workspace/dist
+      - setup_remote_docker:
+          docker_layer_caching: true
       - run: |
           docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD quay.io
           docker build -t quay.io/ktbartholomew/keithbartholomew.com:$CIRCLE_SHA1 .
+          docker push quay.io/ktbartholomew/keithbartholomew.com:$CIRCLE_SHA1
+  update_deployment:
+    docker:
+      - image: gcr.io/google_containers/hyperkube:v1.9.1
+    working_directory: ~/workspace
+    steps:
+      - checkout
+      - run: scripts/update_deployment.sh
+
 workflows:
   version: 2
   test:
     jobs:
-      - test
-      - push:
+      - pretest
+      - publish_image:
+          filters:
+            branches:
+              only: circleci
           requires:
             - test
-    filters:
-      branches:
-        only: circleci
+      - update_deployment:
+          requires:
+            - publish_image
