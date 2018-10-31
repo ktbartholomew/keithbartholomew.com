@@ -21,10 +21,9 @@ jobs:
       - setup_remote_docker
       - attach_workspace:
           at: ~/workspace/dist
-      - run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD quay.io
-      - run: ls -al
       - run: |
-          "docker build -t quay.io/ktbartholomew/keithbartholomew.com:$CIRCLE_SHA1 ~/workspace"
+          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD quay.io
+          docker build -t quay.io/ktbartholomew/keithbartholomew.com:$CIRCLE_SHA1 .
 workflows:
   version: 2
   test:
