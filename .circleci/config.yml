@@ -8,6 +8,10 @@ jobs:
       - checkout
       - run: npm install
       - run: scripts/build-frontend.sh
+      - persist_to_workspace:
+          root: ~/workspace
+          paths:
+            - dist
   push:
     docker:
       - image: circleci/node:8.9.1
@@ -21,3 +25,4 @@ workflows:
   test:
     jobs:
       - test
+      - push
