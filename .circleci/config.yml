@@ -17,11 +17,14 @@ jobs:
       - image: circleci/node:8.9.1
     working_directory: ~/workspace
     steps:
+      - checkout
+      - setup_remote_docker
       - attach_workspace:
           at: ~/workspace/dist
-      - run: pwd
-      - run: ls -al
-      - run: env
+      - run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+      - run: |
+        docker build -t
+        quay.io/ktbartholomew:keithbartholomew.com:$CIRCLE_SHA1 .
 workflows:
   version: 2
   test:
