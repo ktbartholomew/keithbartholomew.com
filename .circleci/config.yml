@@ -24,7 +24,7 @@ jobs:
       - run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD quay.io
       - run: ls -al
       - run: |
-          "docker build -t quay.io/ktbartholomew/keithbartholomew.com:$CIRCLE_SHA1 ."
+          "docker build -t quay.io/ktbartholomew/keithbartholomew.com:$CIRCLE_SHA1 ~/workspace"
 workflows:
   version: 2
   test:
