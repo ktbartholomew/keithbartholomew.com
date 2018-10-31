@@ -38,7 +38,7 @@ workflows:
             branches:
               only: circleci
           requires:
-            - test
+            - pretest
       - update_deployment:
           requires:
             - publish_image
