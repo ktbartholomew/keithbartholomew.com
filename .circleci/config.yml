@@ -25,4 +25,6 @@ workflows:
   test:
     jobs:
       - test
-      - push
+      - push:
+          requires:
+            - test
