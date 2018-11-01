@@ -36,7 +36,7 @@ workflows:
       - publish_image:
           filters:
             branches:
-              only: circleci
+              only: master
           requires:
             - pretest
       - update_deployment:
