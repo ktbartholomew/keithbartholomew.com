@@ -4,10 +4,10 @@ var AccessToken = {
   Get: () => {
     return localStorage.getItem('gh_token');
   },
-  Set: (value) => {
+  Set: value => {
     return localStorage.setItem('gh_token', value);
   },
-  Renew: (callback) => {
+  Renew: callback => {
     var messageHandler = e => {
       if (e.origin !== window.location.origin) {
         return;
@@ -22,7 +22,7 @@ var AccessToken = {
     window.addEventListener('message', messageHandler);
     window.open('/usr/local/bin/gh/oauth/authorize');
   }
-}
+};
 
 module.exports = new Executable({
   name: 'gh',
@@ -37,7 +37,9 @@ module.exports = new Executable({
         Authorization: 'token ' + AccessToken.Get()
       });
 
-      fetch('/usr/local/bin/gh/proxy/users/ktbartholomew/repos', {headers: authHeaders})
+      fetch('/usr/local/bin/gh/proxy/users/ktbartholomew/repos', {
+        headers: authHeaders
+      })
         .then(res => {
           return res.json();
         })
