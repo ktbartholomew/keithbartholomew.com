@@ -4,20 +4,20 @@ var chalk = require('chalk');
 
 module.exports = new Executable({
   name: 'cd',
-  main: function () {
+  main: function() {
     var os = require('../lib/os');
 
-    var doChdir = function () {};
+    var doChdir = function() {};
     var newDir = arguments[1];
 
     if (!newDir) {
-      doChdir = function () {
+      doChdir = function() {
         os.chdir(os.getenv().HOME);
       };
     }
 
     if (newDir) {
-      doChdir = function () {
+      doChdir = function() {
         os.chdir(path.resolve(os.getcwd(), newDir));
       };
     }

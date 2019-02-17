@@ -5,7 +5,7 @@ var fs = require('../lib/fs');
 
 module.exports = new Executable({
   name: 'cat',
-  main: function () {
+  main: function() {
     if (!arguments[1]) {
       this.stderr.write('Usage: ' + this.name + ' [filename]\r\n');
       this.exit(1);
@@ -27,9 +27,11 @@ module.exports = new Executable({
         break;
     }
 
-    lines.forEach(function (line) {
-      this.stdout.write(line + '\r\n');
-    }.bind(this));
+    lines.forEach(
+      function(line) {
+        this.stdout.write(line + '\r\n');
+      }.bind(this)
+    );
 
     this.exit(1);
   }

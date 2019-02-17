@@ -5,7 +5,7 @@ var path = require('path-browserify');
 
 module.exports = new Executable({
   name: 'motd',
-  main: function () {
+  main: function() {
     if (os.getcwd() === os.getenv().HOME) {
       os.exec(['/bin/cat', '/etc/motd']);
       this.exit(0);
