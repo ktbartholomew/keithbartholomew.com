@@ -6,8 +6,10 @@ var os = require('../lib/os');
 
 module.exports = new Executable({
   name: 'ls',
-  main: function () {
-    var target = (arguments[1]) ? path.resolve(os.getcwd(), arguments[1]) : os.getcwd();
+  main: function() {
+    var target = arguments[1]
+      ? path.resolve(os.getcwd(), arguments[1])
+      : os.getcwd();
     var children = fs.scan(target);
 
     for (var i = 0; i < children.length; i++) {

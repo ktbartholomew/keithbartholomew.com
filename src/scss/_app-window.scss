@@ -56,7 +56,8 @@
         transition: background-color 0.1s ease-out;
         width: 32px;
 
-        &:hover, &:focus {
+        &:hover,
+        &:focus {
           background-color: rgba($base1, 0.2);
           outline: none;
           transition: background-color 0.1s ease-in;
@@ -84,7 +85,8 @@
       max-height: calc(80vh - 33px);
     }
 
-    &.plain, &.markdown {
+    &.plain,
+    &.markdown {
       background-color: $markdown-base;
       color: $markdown-color;
       font-size: 16px;
@@ -99,7 +101,12 @@
     &.markdown {
       padding: 1em;
 
-      h1, h2, h3, h4, h5, h6 {
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
         font-weight: normal;
       }
 

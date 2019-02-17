@@ -10,7 +10,7 @@ var FILE_TYPES = {
 };
 
 module.exports = {
-  stat: function (path) {
+  stat: function(path) {
     var stats = {
       type: null
     };
@@ -49,22 +49,26 @@ module.exports = {
       return stats;
     }
   },
-  write: function (path, contents) {
+  write: function(path, contents) {
     filesystem[path] = contents;
   },
-  read: function (path) {
-    if (['file', 'executable', 'hyperlink', 'image', 'markdown'].indexOf(this.stat(path).type) !== -1) {
+  read: function(path) {
+    if (
+      ['file', 'executable', 'hyperlink', 'image', 'markdown'].indexOf(
+        this.stat(path).type
+      ) !== -1
+    ) {
       return filesystem[path];
     } else {
       throw new Error(path + ': No such file or directory');
     }
   },
-  scan: function (path) {
-    path = (path.charAt(path.length - 1) === '/') ? path : path + '/';
+  scan: function(path) {
+    path = path.charAt(path.length - 1) === '/' ? path : path + '/';
     var scanPattern = new RegExp('^' + path + '[^/]+?$');
     var matches = [];
 
-    Object.keys(filesystem).forEach(function (filename) {
+    Object.keys(filesystem).forEach(function(filename) {
       if (filename.match(scanPattern)) {
         matches.push(filename);
       }

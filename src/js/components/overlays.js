@@ -3,7 +3,7 @@ var term = require('../lib/term');
 var OverlayStore = require('../lib/stores/overlay');
 
 class Overlays extends React.Component {
-  constructor (props) {
+  constructor(props) {
     super(props);
 
     this.state = {
@@ -11,13 +11,13 @@ class Overlays extends React.Component {
     };
 
     this.handlers = {
-      closeWindow: function () {
+      closeWindow: function() {
         OverlayStore.clearOverlay();
         term.focus();
       }
     };
 
-    var changeListener = function (data) {
+    var changeListener = function(data) {
       this.setState({
         window: data
       });
@@ -26,7 +26,7 @@ class Overlays extends React.Component {
     OverlayStore.addListener('change', changeListener);
   }
 
-  render () {
+  render() {
     var window = this.state.window || null;
 
     if (window === null) {
@@ -38,17 +38,15 @@ class Overlays extends React.Component {
     bodyClasses = bodyClasses.join(' ');
 
     return (
-      <div className='app-window'>
-        <div className='title-bar'>
-          <div className='left' />
-          <div className='center'>{window.title}</div>
-          <div className='right'>
+      <div className="app-window">
+        <div className="title-bar">
+          <div className="left" />
+          <div className="center">{window.title}</div>
+          <div className="right">
             <button onClick={this.handlers.closeWindow}>&times;</button>
           </div>
         </div>
-        <div className={bodyClasses}>
-          {window.body}
-        </div>
+        <div className={bodyClasses}>{window.body}</div>
       </div>
     );
   }

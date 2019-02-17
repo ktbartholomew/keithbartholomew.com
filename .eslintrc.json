@@ -1,0 +1,27 @@
+{
+  "parser": "babel-eslint",
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "plugins": ["prettier"],
+  "rules": {
+    "prettier/prettier": [
+      "error",
+      {
+        "singleQuote": true,
+        "jsxBracketSameLine": true,
+        "bracketSpacing": false
+      }
+    ]
+  },
+  "extends": ["plugin:react/recommended", "prettier"],
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  }
+}

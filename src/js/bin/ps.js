@@ -2,7 +2,7 @@ var Executable = require('../lib/files/executable');
 
 module.exports = new Executable({
   name: 'ps',
-  main: function () {
+  main: function() {
     var output = '';
 
     output += 'PID      USER     TIME   COMMAND\r\n';
@@ -13,4 +13,3 @@ module.exports = new Executable({
     this.exit(0);
   }
 });
-
