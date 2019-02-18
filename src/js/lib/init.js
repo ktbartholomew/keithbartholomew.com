@@ -6,6 +6,7 @@ var Hyperlink = require('./files/hyperlink');
 var os = require('./os');
 var fs = require('./fs');
 var fakeboot = require('./fakeboot');
+var path = require('path-browserify');
 
 module.exports = function() {
   fs.write('/', new Directory());
@@ -129,8 +130,36 @@ module.exports = function() {
     })
   );
 
+  startShell();
+};
+
+function startShell() {
+  var startPath = '/home/website' + window.location.pathname;
+  var entryStat = fs.stat(startPath);
+  console.log(entryStat);
+
+  if (entryStat.type !== null) {
+    if (entryStat.type === 'directory') {
+      if (fs.stat(startPath + '/index.md').type !== null) {
+        // os.chdir(path.resolve(startPath, '..'), true);
+        os.exec(['/usr/local/bin/open', startPath + '/index.md']);
+        os.exec(['/bin/sh']);
+        return;
+      }
+
+      os.exec(['/bin/sh']);
+      return;
+    }
+
+    os.chdir(path.resolve(startPath, '..'), true);
+    os.exec(['/usr/local/bin/open', startPath]);
+    os.exec(['/bin/sh']);
+
+    return;
+  }
+
   fakeboot(function() {
     os.exec(['/bin/motd']);
     os.exec(['/bin/sh']);
   });
-};
+}
