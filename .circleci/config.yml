@@ -23,7 +23,7 @@ jobs:
           docker push quay.io/ktbartholomew/keithbartholomew.com:$CIRCLE_SHA1
   update_deployment:
     docker:
-      - image: gcr.io/google_containers/hyperkube:v1.9.1
+      - image: gcr.io/google_containers/hyperkube:v1.13.5
     working_directory: ~/workspace
     steps:
       - checkout
