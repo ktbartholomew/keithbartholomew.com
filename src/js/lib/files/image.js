@@ -9,6 +9,12 @@ var ImageFile = function (options) {
   Object.defineProperty(this, 'src', {
     value: options.src
   });
+
+  if (options.alt) {
+    Object.defineProperty(this, 'alt', {
+      value: options.alt
+    })
+  }
 };
 
 ImageFile.prototype = Object.create(File.prototype);

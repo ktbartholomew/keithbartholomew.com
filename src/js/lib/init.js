@@ -86,6 +86,22 @@ module.exports = function() {
     '/home/website/photos/keith.jpg',
     new ImageFile({src: '/img/keith.jpg'})
   );
+  fs.write(
+    '/home/website/photos/time-trial-1.jpg',
+    new ImageFile({src: '/img/time-trial-1.jpg'})
+  );
+  fs.write(
+    '/home/website/photos/time-trial-2.jpg',
+    new ImageFile({src: '/img/time-trial-2.jpg'})
+  );
+  fs.write(
+    '/home/website/photos/trek-madone.jpg',
+    new ImageFile({src: '/img/trek-madone.jpg'})
+  );
+  fs.write(
+    '/home/website/photos/derby.jpg',
+    new ImageFile({src: '/img/derby.jpg'})
+  );
   fs.write('/home/website/portfolio', new Directory());
   fs.write(
     '/home/website/portfolio/README.md',
