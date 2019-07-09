@@ -13,7 +13,7 @@ module.exports = function (options) {
 
   if (options.file instanceof ImageFile) {
     overlayConfig.type = 'image';
-    overlayConfig.body = (<img src={options.file.src} />);
+    overlayConfig.body = (<img src={options.file.src} alt={options.file.alt}/>);
 
     return overlayConfig;
   }
