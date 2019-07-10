@@ -1,5 +1,5 @@
 var EventEmitter = require('events');
-var term = require('./term');
+var term = require('./term').default;
 
 var IOStream = function() {
   var emitter = new EventEmitter();

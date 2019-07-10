@@ -1,11 +1,11 @@
 var React = require('react');
-var term = require('../lib/term');
+import term from '../lib/term';
 
-class Terminal extends React.Component {
+export default class Terminal extends React.Component {
   constructor(props) {
     super(props);
 
-    this.parentID = 'terminal-parent';
+    this.ref = React.createRef();
 
     this.resizeTerminal = function() {
       var cols =
@@ -22,7 +22,7 @@ class Terminal extends React.Component {
   }
 
   componentDidMount() {
-    term.open(document.getElementById(this.parentID));
+    term.open(this.ref.current, false);
     this.resizeTerminal();
     term.focus();
 
@@ -30,8 +30,6 @@ class Terminal extends React.Component {
   }
 
   render() {
-    return <div id={this.parentID} />;
+    return <div ref={this.ref} />;
   }
 }
-
-module.exports = Terminal;

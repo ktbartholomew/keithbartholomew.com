@@ -1,9 +1,8 @@
-var term = require('./term');
-var bootlog = require('raw!../var/bootlog');
+import term from './term';
+import bootlog from 'raw-loader!../var/bootlog';
 
-bootlog = bootlog.split('\n');
-
-module.exports = function(callback) {
+export default function(callback) {
+  let lines = bootlog.split('\n');
   callback = callback || function() {};
 
   if (window.location.pathname !== '/') {
@@ -11,7 +10,7 @@ module.exports = function(callback) {
   }
 
   var writeLogLine = function() {
-    var line = bootlog.shift();
+    var line = lines.shift();
 
     if (typeof line === 'undefined') {
       term.clear();
@@ -23,4 +22,4 @@ module.exports = function(callback) {
   };
 
   writeLogLine();
-};
+}

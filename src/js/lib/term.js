@@ -1,8 +1,6 @@
-var Terminal = require('xterm');
+import Terminal from 'xterm';
 
-var term = new Terminal({
+export default new Terminal({
   cursorBlink: true,
   visualBell: true
 });
-
-module.exports = term;

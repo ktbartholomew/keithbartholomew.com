@@ -1,5 +1,5 @@
 var React = require('react');
-var term = require('../lib/term');
+var term = require('../lib/term').default;
 var OverlayStore = require('../lib/stores/overlay');
 
 class Overlays extends React.Component {
