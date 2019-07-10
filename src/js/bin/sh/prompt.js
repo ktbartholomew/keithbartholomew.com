@@ -1,4 +1,4 @@
-var term = require('../../lib/term');
+var term = require('../../lib/term').default;
 var os = require('../../lib/os');
 var io = require('../../lib/io');
 var chalk = require('chalk');

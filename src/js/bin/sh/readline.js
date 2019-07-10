@@ -1,4 +1,4 @@
-var term = require('../../lib/term');
+var term = require('../../lib/term').default;
 var os = require('../../lib/os');
 var fs = require('../../lib/fs');
 var io = require('../../lib/io');
@@ -6,11 +6,11 @@ var chalk = require('chalk');
 var path = require('path-browserify');
 var prompt = require('./prompt');
 
-module.exports = function () {
+module.exports = function() {
   var eatOutput = false;
 
   io.stdout.capture();
-  io.stdout.on('data', function (data) {
+  io.stdout.on('data', function(data) {
     if (eatOutput) {
       return;
     }
@@ -18,14 +18,14 @@ module.exports = function () {
   });
 
   io.stderr.capture();
-  io.stderr.on('data', function (data) {
+  io.stderr.on('data', function(data) {
     if (eatOutput) {
       return;
     }
     term.write(data);
   });
 
-  var resolveExecutable = function (name) {
+  var resolveExecutable = function(name) {
     var paths = os.getenv().PATH.split(':');
 
     for (var i = 0; i < paths.length; i++) {
@@ -38,7 +38,7 @@ module.exports = function () {
     throw new Error(name + ': command not found');
   };
 
-  var handleInput = function (input) {
+  var handleInput = function(input) {
     if (input.trim() === '') {
       return prompt.prompt(handleInput);
     }
@@ -50,7 +50,7 @@ module.exports = function () {
       }
     }
 
-    var execCallback = function (e, code) {
+    var execCallback = function(e, code) {
       return prompt.prompt(handleInput);
     };
 

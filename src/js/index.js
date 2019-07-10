@@ -1,8 +1,9 @@
 var chalk = require('chalk');
 var init = require('./lib/init');
-var React = require('react');
-var ReactDOM = require('react-dom');
-var Terminal = require('./components/terminal');
+
+import React from 'react';
+import ReactDOM from 'react-dom';
+import Terminal from './components/terminal';
 var Overlays = require('./components/overlays');
 
 chalk.enabled = true;

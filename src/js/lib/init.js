@@ -5,7 +5,7 @@ var MarkdownFile = require('./files/markdown');
 var Hyperlink = require('./files/hyperlink');
 var os = require('./os');
 var fs = require('./fs');
-var fakeboot = require('./fakeboot');
+var fakeboot = require('./fakeboot').default;
 var path = require('path-browserify');
 
 module.exports = function() {
@@ -35,31 +35,49 @@ module.exports = function() {
   fs.write('/usr/local/bin/view', require('../bin/view'));
   fs.write('/usr/local/bin/open', require('../bin/open'));
 
-  fs.write('/etc/motd', new File({contents: require('raw!../etc/motd')}));
+  fs.write(
+    '/etc/motd',
+    new File({contents: require('raw-loader!../etc/motd').default})
+  );
   fs.write(
     '/etc/resolv.conf',
-    new File({contents: require('raw!../etc/resolv.conf')})
+    new File({contents: require('raw-loader!../etc/resolv.conf').default})
   );
-  fs.write('/etc/passwd', new File({contents: require('raw!../etc/passwd')}));
-  fs.write('/etc/shadow', new File({contents: require('raw!../etc/shadow')}));
-  fs.write('/etc/group', new File({contents: require('raw!../etc/group')}));
+  fs.write(
+    '/etc/passwd',
+    new File({contents: require('raw-loader!../etc/passwd').default})
+  );
+  fs.write(
+    '/etc/shadow',
+    new File({contents: require('raw-loader!../etc/shadow').default})
+  );
+  fs.write(
+    '/etc/group',
+    new File({contents: require('raw-loader!../etc/group').default})
+  );
   fs.write('/home/otheruser', new Directory());
   fs.write(
     '/home/website/help.md',
-    new MarkdownFile({contents: require('raw!../home/help.md')})
+    new MarkdownFile({contents: require('raw-loader!../home/help.md').default})
   );
   fs.write(
     '/home/website/about-me.md',
-    new MarkdownFile({contents: require('raw!../home/about-me.md')})
+    new MarkdownFile({
+      contents: require('raw-loader!../home/about-me.md').default
+    })
   );
   fs.write(
     '/home/website/resume.md',
-    new MarkdownFile({contents: require('raw!../home/resume.md')})
+    new MarkdownFile({
+      contents: require('raw-loader!../home/resume.md').default
+    })
   );
   fs.write('/home/website/links', new Directory());
   fs.write(
     '/home/website/links/README.md',
-    new MarkdownFile({contents: require('raw!../home/links/README.md')})
+    new MarkdownFile({
+      contents: require('raw-loader!../home/links/README.md').default
+    })
   );
   fs.write(
     '/home/website/links/twitter.url',
@@ -80,7 +98,7 @@ module.exports = function() {
   fs.write('/home/website/photos', new Directory());
   fs.write(
     '/home/website/photos/README.md',
-    new MarkdownFile({contents: require('raw!../home/photos/README.md')})
+    new MarkdownFile({contents: require('raw-loader!../home/photos/README.md')})
   );
   fs.write(
     '/home/website/photos/keith.jpg',
@@ -105,13 +123,15 @@ module.exports = function() {
   fs.write('/home/website/portfolio', new Directory());
   fs.write(
     '/home/website/portfolio/README.md',
-    new MarkdownFile({contents: require('raw!../home/portfolio/README.md')})
+    new MarkdownFile({
+      contents: require('raw-loader!../home/portfolio/README.md')
+    })
   );
   fs.write('/home/website/portfolio/carina', new Directory());
   fs.write(
     '/home/website/portfolio/carina/index.md',
     new MarkdownFile({
-      contents: require('raw!../home/portfolio/carina/index.md')
+      contents: require('raw-loader!../home/portfolio/carina/index.md')
     })
   );
   fs.write(
@@ -127,7 +147,8 @@ module.exports = function() {
   fs.write(
     '/home/website/portfolio/developer.rackspace.com/index.md',
     new MarkdownFile({
-      contents: require('raw!../home/portfolio/developer.rackspace.com/index.md')
+      contents: require('raw-loader!../home/portfolio/developer.rackspace.com/index.md')
+        .default
     })
   );
   fs.write(
@@ -141,7 +162,8 @@ module.exports = function() {
   fs.write(
     '/home/website/portfolio/skywriter/index.md',
     new MarkdownFile({
-      contents: require('raw!../home/portfolio/skywriter/index.md'),
+      contents: require('raw-loader!../home/portfolio/skywriter/index.md')
+        .default,
       escapeHtml: false
     })
   );
@@ -152,7 +174,6 @@ module.exports = function() {
 function startShell() {
   var startPath = '/home/website' + window.location.pathname;
   var entryStat = fs.stat(startPath);
-  console.log(entryStat);
 
   if (entryStat.type !== null) {
     if (entryStat.type === 'directory') {
