@@ -7,7 +7,7 @@ export default class Terminal extends React.Component {
 
     this.ref = React.createRef();
 
-    this.resizeTerminal = function() {
+    this.resizeTerminal = function () {
       var cols =
         Math.floor(
           window.innerWidth /

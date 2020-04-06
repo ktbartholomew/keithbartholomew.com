@@ -8,7 +8,7 @@ var fs = require('./fs');
 var fakeboot = require('./fakeboot').default;
 var path = require('path-browserify');
 
-module.exports = function() {
+module.exports = function () {
   fs.write('/', new Directory());
   fs.write('/bin', new Directory());
   fs.write('/etc', new Directory());
@@ -195,7 +195,7 @@ function startShell() {
     return;
   }
 
-  fakeboot(function() {
+  fakeboot(function () {
     os.exec(['/bin/motd']);
     os.exec(['/bin/sh']);
   });

@@ -2,7 +2,7 @@ version: 2
 jobs:
   pretest:
     docker:
-      - image: circleci/node:8.9.1
+      - image: circleci/node:12.16.1
     working_directory: ~/workspace
     steps:
       - checkout
@@ -11,12 +11,12 @@ jobs:
       - run: scripts/build-frontend.sh
   publish_image:
     docker:
-      - image: circleci/node:8.9.1
+      - image: circleci/node:12.16.1
     working_directory: ~/workspace
     steps:
       - checkout
       - setup_remote_docker:
-          docker_layer_caching: true
+          docker_layer_caching: false
       - run: |
           docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD quay.io
           docker build -t quay.io/ktbartholomew/keithbartholomew.com:$CIRCLE_SHA1 .
