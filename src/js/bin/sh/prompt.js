@@ -2,45 +2,46 @@ var term = require('../../lib/term').default;
 var os = require('../../lib/os');
 var io = require('../../lib/io');
 var chalk = require('chalk');
+const stringWidth = require('string-width');
 var tabComplete = require('./tab-complete');
 var history = require('./history');
 
 module.exports = {
-  prompt: function(callback) {
+  prompt: function (callback) {
     var input = {
       contents: '',
       cursor: 0
     };
 
     var cursor = {
-      left: function() {
+      left: function () {
         input.cursor = Math.max(0, input.cursor - 1);
         drawPrompt();
       },
-      right: function() {
+      right: function () {
         input.cursor = Math.min(input.contents.length, input.cursor + 1);
         drawPrompt();
       },
-      home: function() {
+      home: function () {
         input.cursor = 0;
         drawPrompt();
       },
-      end: function() {
+      end: function () {
         input.cursor = input.contents.length;
         drawPrompt();
       }
     };
 
-    var drawPrompt = function() {
+    var drawPrompt = function () {
       term.x = 0;
       term.eraseLine(term.y);
       io.stdout.write(PS1() + input.contents);
-      term.x = chalk.stripColor(PS1()).length + input.cursor;
+      term.x = stringWidth(PS1()) + input.cursor;
 
       term.refresh(term.y + term.ybase, term.y + term.ybase + 1, false);
     };
 
-    var insertData = function(data) {
+    var insertData = function (data) {
       var contents = input.contents.split('');
       var addition = data.split('');
 
@@ -53,7 +54,7 @@ module.exports = {
       drawPrompt();
     };
 
-    var setInput = function(data, cursor, updateScratchpad) {
+    var setInput = function (data, cursor, updateScratchpad) {
       if (typeof cursor !== 'number') {
         cursor = data.length;
       } else {
@@ -72,7 +73,7 @@ module.exports = {
       drawPrompt();
     };
 
-    var backspace = function() {
+    var backspace = function () {
       var contents = input.contents.split('');
       contents.splice(input.cursor - 1, 1);
 
@@ -81,7 +82,7 @@ module.exports = {
       drawPrompt();
     };
 
-    var PS1 = function() {
+    var PS1 = function () {
       var cwd = os.getcwd();
       var homeDir = new RegExp('^' + os.getenv().HOME);
 
@@ -90,7 +91,7 @@ module.exports = {
       return chalk.blue(cwd + ' $ ');
     };
 
-    var dataHandler = function(data) {
+    var dataHandler = function (data) {
       var bytes = [];
       for (var i = 0; i < data.length; i++) {
         bytes.push(data.codePointAt(i));
@@ -141,7 +142,7 @@ module.exports = {
             term.bell();
             break;
           case 9:
-            tabComplete(input, function(err, result) {
+            tabComplete(input, function (err, result) {
               if (err) {
                 throw err;
               }
@@ -169,7 +170,7 @@ module.exports = {
       insertData(data);
     };
 
-    var endPrompt = function() {
+    var endPrompt = function () {
       term.off('data', dataHandler);
 
       history.Append(input.contents);
@@ -182,7 +183,7 @@ module.exports = {
 
     // redraw the prompt if the location changes, to reflect the new working
     // directory
-    window.addEventListener('popstate', function(e) {
+    window.addEventListener('popstate', function (e) {
       drawPrompt();
     });
   }
