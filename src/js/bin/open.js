@@ -5,7 +5,7 @@ var path = require('path-browserify');
 
 module.exports = new Executable({
   name: 'open',
-  main: function() {
+  main: function () {
     if (!arguments[1]) {
       this.stderr.write('Usage: ' + this.name + ' [filename]\r\n');
       this.exit(1);

@@ -11,13 +11,13 @@ class Overlays extends React.Component {
     };
 
     this.handlers = {
-      closeWindow: function() {
+      closeWindow: function () {
         OverlayStore.clearOverlay();
         term.focus();
       }
     };
 
-    var changeListener = function(data) {
+    var changeListener = function (data) {
       this.setState({
         window: data
       });

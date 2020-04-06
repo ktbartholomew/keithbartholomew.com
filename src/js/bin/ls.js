@@ -6,7 +6,7 @@ var os = require('../lib/os');
 
 module.exports = new Executable({
   name: 'ls',
-  main: function() {
+  main: function () {
     var target = arguments[1]
       ? path.resolve(os.getcwd(), arguments[1])
       : os.getcwd();
