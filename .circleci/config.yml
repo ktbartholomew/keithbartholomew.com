@@ -2,7 +2,7 @@ version: 2
 jobs:
   pretest:
     docker:
-      - image: circleci/node:12.16.1
+      - image: cimg/node:14.15.4
     working_directory: ~/workspace
     steps:
       - checkout
@@ -11,7 +11,7 @@ jobs:
       - run: scripts/build-frontend.sh
   publish_image:
     docker:
-      - image: circleci/node:12.16.1
+      - image: cimg/node:14.15.4
     working_directory: ~/workspace
     steps:
       - checkout
