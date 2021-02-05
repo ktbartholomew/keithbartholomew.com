@@ -1,6 +1,5 @@
 var React = require('react');
 import term from '../lib/term';
-
 export default class Terminal extends React.Component {
   constructor(props) {
     super(props);
@@ -11,11 +10,11 @@ export default class Terminal extends React.Component {
       var cols =
         Math.floor(
           window.innerWidth /
-            term.charMeasureElement.getBoundingClientRect().width
+            term._core._renderService.dimensions.actualCellWidth
         ) - 1;
       var rows = Math.floor(
         window.innerHeight /
-          term.charMeasureElement.getBoundingClientRect().height
+          term._core._renderService.dimensions.actualCellHeight
       );
       term.resize(cols, rows);
     };

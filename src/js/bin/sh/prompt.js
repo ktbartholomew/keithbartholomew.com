@@ -33,12 +33,13 @@ module.exports = {
     };
 
     var drawPrompt = function () {
-      term.x = 0;
-      term.eraseLine(term.y);
-      io.stdout.write(PS1() + input.contents);
-      term.x = stringWidth(PS1()) + input.cursor;
+      let blank = ''
+      for(let i = 0; i < term.cols - (stringWidth(PS1()) + input.cursor); i++) {
+        blank += ' '
+      }
 
-      term.refresh(term.y + term.ybase, term.y + term.ybase + 1, false);
+      io.stdout.write(blank + '\r'+PS1() + input.contents);
+      term.refresh(0, term.buffer.normal.cursorY+1);
     };
 
     var insertData = function (data) {
@@ -74,6 +75,7 @@ module.exports = {
     };
 
     var backspace = function () {
+      term.write('\b');
       var contents = input.contents.split('');
       contents.splice(input.cursor - 1, 1);
 
@@ -170,15 +172,17 @@ module.exports = {
       insertData(data);
     };
 
+    
+    let onData;
     var endPrompt = function () {
-      term.off('data', dataHandler);
+      onData.dispose();
 
       history.Append(input.contents);
       io.stdout.write('\r\n');
       callback(input.contents);
     };
 
-    term.on('data', dataHandler);
+    onData = term.onData(dataHandler);
     drawPrompt();
 
     // redraw the prompt if the location changes, to reflect the new working
