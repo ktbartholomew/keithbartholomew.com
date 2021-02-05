@@ -1,9 +1,9 @@
-FROM node:8.9.1
+FROM node:14.15.4
 WORKDIR /app
 ENV NPM_CONFIG_LOGLEVEL=warn
 ENV NODE_ENV=production
 ADD . /app
-RUN npm install
+RUN npm ci
 RUN scripts/build-frontend.sh
 
 FROM nginx:latest
