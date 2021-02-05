@@ -14,7 +14,7 @@ export default class Terminal extends React.Component {
         ) - 1;
       var rows = Math.floor(
         window.innerHeight /
-        term._core._renderService.dimensions.actualCellHeight
+          term._core._renderService.dimensions.actualCellHeight
       );
       term.resize(cols, rows);
     };

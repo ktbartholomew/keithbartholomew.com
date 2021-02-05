@@ -35,7 +35,7 @@
  *  Default styles for xterm.js
  */
 
- .xterm {
+.xterm {
   font-feature-settings: "liga" 0;
   position: relative;
   user-select: none;
@@ -79,7 +79,7 @@
 .xterm .composition-view {
   /* TODO: Composition position got messed up somewhere */
   background: $base03;
-  color: #FFF;
+  color: #fff;
   display: none;
   position: absolute;
   white-space: nowrap;

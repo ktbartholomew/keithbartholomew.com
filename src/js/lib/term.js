@@ -1,4 +1,4 @@
-import { Terminal } from 'xterm';
+import {Terminal} from 'xterm';
 import chalk from 'chalk';
 chalk.level = 2;
 
@@ -15,6 +15,6 @@ export default new Terminal({
     violet: '#6c71c4',
     blue: '#268bd2',
     cyan: '#2aa198',
-    green: '#859900',
+    green: '#859900'
   }
 });
