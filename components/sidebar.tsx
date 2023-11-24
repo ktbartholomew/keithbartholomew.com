@@ -3,10 +3,10 @@ import classes from "./sidebar.module.css";
 export function Sidebar() {
   return (
     <div
-      className={`bg-slate-900 border-r border-white ${classes.sidebar}`}
+      className={`bg-slate-900 ${classes.sidebar}`}
       id="sidebar"
     >
-      <h2 className={classes.title}>
+      <h2 className={`${classes.title} border-0 border-b`}>
         <a href="/" className="text-slate-100">
           Keith Bartholomew
         </a>

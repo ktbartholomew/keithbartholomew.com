@@ -3,46 +3,77 @@
 @tailwind utilities;
 
 :root {
-    --color-text-background: #111133;
-    --color-text-foreground: #eeeeff;
+  --color-text-background: #111133;
+  --color-text-foreground: #eeeeff;
 
-    --color-box-border: var(--color-text-foreground);
+  --color-box-border: var(--color-text-foreground);
 }
 
-body, html {
-    @apply text-slate-100;
-    @apply bg-slate-900;
-    font-family: 'Menlo', 'Monaco', 'Courier New', Courier, monospace;
-    /* background-color: var(--color-text-background); */
-    font-size: 16px;
+body,
+html {
+  @apply text-slate-100;
+  @apply bg-slate-900;
+  font-family: "Menlo", "Monaco", "Courier New", Courier, monospace;
+  /* background-color: var(--color-text-background); */
+  font-size: 16px;
 }
 
-h1, h2, h3, h4, h5, h6 {
-    font-size: 1rem;
-    margin: 0;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-size: 1rem;
+  margin: 0;
 }
 
 h1 {
-    @apply p-2;
-    @apply mb-8;
-    @apply text-slate-900;
-    @apply bg-slate-100;
+  @apply p-2;
+  @apply mb-8;
+  @apply text-slate-900;
+  @apply bg-slate-100;
 }
 
 h2 {
-    border-bottom: solid 1px var(--color-text-foreground);
-    margin-bottom: 0.5rem;
-    padding-bottom: 0.5rem;
+  border: solid 1px;
+  @apply border-slate-100;
+  margin-bottom: 1rem;
+  padding: 0.5rem 1rem;
+}
+
+h3 {
+  border-bottom: solid 1px;
+  @apply border-slate-100;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+}
+
+h4 {
+  border-left: solid 0.5rem;
+  @apply border-slate-100;
+  margin-bottom: 0.5rem;
+  padding: 0 0.5rem;
 }
 
 p {
-    @apply mb-8;
+  @apply mb-8;
 }
 
 a {
-    @apply text-blue-400;
+  @apply text-blue-400;
 }
 
-a:hover, a:active {
-    @apply underline;
+a:hover,
+a:active {
+  @apply underline;
+}
+
+ul, ol {
+  @apply mb-8;
+  @apply pl-4;
+}
+
+ul {
+  list-style-type: square;
 }
