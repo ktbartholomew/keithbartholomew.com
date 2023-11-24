@@ -1,6 +1,10 @@
 import { Sidebar } from "../components/sidebar";
 import "./globals.css";
 
+export const metadata = {
+  title: 'Keith Bartholomew'
+}
+
 export default function RootLayout({
   children,
 }: {
@@ -17,11 +21,6 @@ export default function RootLayout({
           </div>
           <div className="flex-auto p-4 md:p-8">{children}</div>
         </div>
-
-        {/* <div className="ml-[32ch] p-8">
-           <div className="max-w-[80ch]">{children}</div>
-        </div>
-  */}
       </body>
     </html>
   );

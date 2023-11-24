@@ -1,3 +1,7 @@
+export const metadata = {
+  title: 'Resume - Keith Bartholomew'
+}
+
 export default function Page() {
   return (
     <>
@@ -10,8 +14,8 @@ export default function Page() {
       <ul>
         <li>
           Email:{" "}
-          <a href="mailto:keith@keithbartholomew.com">
-            keith@keithbartholomew.com
+          <a href="mailto:%6b%65%69%74%68%40%6b%65%69%74%68%62%61%72%74%68%6f%6c%6f%6d%65%77%2e%63%6f%6d">
+            &#107;&#101;&#105;&#116;&#104;&#64;&#107;&#101;&#105;&#116;&#104;&#98;&#97;&#114;&#116;&#104;&#111;&#108;&#111;&#109;&#101;&#119;&#46;&#99;&#111;&#109;
           </a>
         </li>
         <li>

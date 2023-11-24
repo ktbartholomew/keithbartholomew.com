@@ -1,5 +1,9 @@
 import Image from "next/image";
 
+export const metadata = {
+  title: 'Keith Bartholomew'
+}
+
 export default function Page() {
   return (
     <>
