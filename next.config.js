@@ -1,3 +1,5 @@
+const withMDX = require('@next/mdx')()
+
 /**
  * @type {import('next').NextConfig}
  */
@@ -12,6 +14,7 @@ const nextConfig = {
 
   // Optional: Change the output directory `out` -> `dist`
   // distDir: 'dist',
+  pageExtensions: ['js', 'jsx', 'ts', 'tsx', 'mdx'],
   images: {
     remotePatterns: [
       {
@@ -23,4 +26,4 @@ const nextConfig = {
   
 };
 
-module.exports = nextConfig;
+module.exports = withMDX(nextConfig);
