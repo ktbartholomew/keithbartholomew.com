@@ -60,6 +60,13 @@ p {
   @apply mb-8;
 }
 
+code {
+  @apply text-green-200;
+  @apply bg-slate-700;
+  @apply rounded-sm;
+  @apply px-1;
+}
+
 a {
   @apply text-blue-400;
 }

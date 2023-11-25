@@ -1,27 +1,26 @@
-export const metadata = {
-    title: 'Back to Blogging - Keith Bartholomew'
+import { readFile } from "fs/promises";
+import matter from "gray-matter";
+import { MDXRemote } from "next-mdx-remote/rsc";
+import PostTitle from "../../../../components/post-title";
+
+async function getMarkdown(
+  slug: string
+): Promise<{ content: string; data: { [key: string]: any } }> {
+  const file = await readFile(
+    `${process.cwd()}/content/blog/posts/${slug}.mdx`
+  );
+
+  return matter(file);
 }
 
-export default function Post() {
+export default async function Post(props: { params: { post: string } }) {
+  const md = await getMarkdown(props.params.post);
+
   return (
     <>
       <article>
-        <h1 className="mb-0">Back to Blogging</h1>
-        <div className="border border-slate-100 p-2 mb-8">
-          <time>2023-11-24T10:10:00.000Z</time>
-        </div>
-        <p>
-          Lorem ipsum dolor, sit amet consectetur adipisicing elit. Amet,
-          impedit at excepturi vel ab iste aliquid recusandae, accusamus non
-          sunt laborum voluptatem debitis illo odit similique necessitatibus
-          numquam illum officia.
-        </p>
-        <p>
-          Lorem ipsum dolor, sit amet consectetur adipisicing elit. Amet,
-          impedit at excepturi vel ab iste aliquid recusandae, accusamus non
-          sunt laborum voluptatem debitis illo odit similique necessitatibus
-          numquam illum officia.
-        </p>
+        <PostTitle title={md.data.title} date={md.data.date.toISOString()} />
+        <MDXRemote source={md.content} />
       </article>
     </>
   );
