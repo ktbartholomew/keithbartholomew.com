@@ -1,14 +1,12 @@
-import Image from "next/image";
-
 export const metadata = {
-  title: 'Keith Bartholomew'
-}
+  title: "Keith Bartholomew",
+};
 
 export default function Page() {
   return (
     <>
       <h1>Keith Bartholomew</h1>
-      <Image
+      <img
         src={
           "https://secure.gravatar.com/avatar/b52cebf584041044d87df10ea9afdf7f5aa09c4ff66182d4bcbca25f507414c7?s=512"
         }

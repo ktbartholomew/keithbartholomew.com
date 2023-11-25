@@ -1,6 +1,6 @@
 export const metadata = {
-  title: 'Resume - Keith Bartholomew'
-}
+  title: "Resume",
+};
 
 export default function Page() {
   return (
