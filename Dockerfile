@@ -1,12 +1,21 @@
-FROM node:14.15.4
+FROM node:20-slim AS build
 WORKDIR /app
 ENV NPM_CONFIG_LOGLEVEL=warn
 ENV NODE_ENV=production
-ADD . /app
-RUN npm ci
-RUN scripts/build-frontend.sh
 
-FROM nginx:latest
+COPY package.json package.json
+COPY package-lock.json package-lock.json
 
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=0 /app/dist /usr/share/nginx/html/
+RUN npm ci --omit=dev
+COPY . .
+RUN npm run build
+
+FROM node:20-slim AS runtime
+WORKDIR /app
+
+COPY --from=build /app/out out
+RUN npm install -g serve
+
+EXPOSE 3000
+
+CMD ["npx", "serve", "-n", "out"]
