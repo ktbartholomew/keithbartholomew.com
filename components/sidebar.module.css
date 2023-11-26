@@ -1,0 +1,16 @@
+.sidebar {
+    overflow-x: hidden;
+    overflow-y: auto;
+    white-space: wrap;
+}
+
+.title {
+    font-weight: bold;
+    padding: 1rem 0.5rem;
+    text-align: center;
+}
+
+.link {
+    display: block;
+    padding: 0.5rem;
+}
