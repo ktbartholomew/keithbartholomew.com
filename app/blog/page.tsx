@@ -13,7 +13,7 @@ export default async function Page() {
       <h1 className="mt-0">Blog</h1>
       {posts.map((p) => (
         <article key={p.data.slug} className="border mb-8">
-          <div className="flex justify-between border-b border-slate-100 p-4">
+          <div className="md:flex justify-between border-b border-slate-100 p-4">
             <div>
               <Link href={`/blog/posts/${p.data.slug}`}>
                 <h3 className=" border-0 p-0 mb-0">{p.data.title}</h3>
