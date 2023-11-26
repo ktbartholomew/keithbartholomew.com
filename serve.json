@@ -1,10 +1,4 @@
 {
   "public": "out",
-  "directoryListing": false,
-  "headers": [
-    {
-      "source": "**/*",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=600" }]
-    }
-  ]
+  "directoryListing": false
 }
