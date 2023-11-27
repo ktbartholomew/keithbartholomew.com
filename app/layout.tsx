@@ -28,7 +28,6 @@ export default function RootLayout({
           </div>
           <div className="flex-auto p-4 md:p-8 max-w-[96ch]">{children}</div>
         </div>
-        <LoadingMask />
       </body>
     </html>
   );
