@@ -1,6 +1,8 @@
 ---
 title: "AWS re:Invent 2023: Generative AI Everywhere"
 date: 2023-12-01T17:00:00.000Z
+excerpt: |
+  At AWS re:Invent 2023, beyond the chatbot buzz, Amazon urges action with a "Now Go Build" ethos, introducing AI tools seamlessly embedded in the development process, highlighting sustainability priorities, emphasizing the ongoing relevance of serverless options, and advocating for code reduction in favor of fully-managed services.
 ---
 
 I'm wrapping up a week in Las Vegas at [AWS re:Invent][reinvent], their _massive_ annual tech conference. I'll admit I had low expectations for the conference this year, mostly because I knew the recent frenzy around generative AI and chatbots was going to absolutely dominate the conversation. I was right about that, but there was a lot more to the discussion than just playing with chat bots. By the end of the conference I was still feeling that usual buzz of excitement, ready to get back to work and conquer the world.
