@@ -51,7 +51,7 @@ h3 {
 
 h4 {
   border-left: solid 0.5rem;
-  @apply border-slate-100;
+  @apply border-green-400;
   @apply mb-2;
   @apply px-2;
 }

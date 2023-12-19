@@ -3,6 +3,7 @@ import PostTitle from "../../../../components/post-title";
 import { getPost, listPosts } from "../../posts";
 import { Metadata } from "next";
 import { Params } from "next/dist/shared/lib/router/utils/route-matcher";
+import rehypePrism from "@mapbox/rehype-prism";
 
 export default async function Post(props: { params: { post: string } }) {
   const post = await getPost(props.params.post);
@@ -14,7 +15,7 @@ export default async function Post(props: { params: { post: string } }) {
           title={post.data.title}
           date={post.data.date.toISOString()}
         />
-        <MDXRemote source={post.content} />
+        <MDXRemote source={post.content} options={{mdxOptions: {rehypePlugins: [rehypePrism]}}} />
       </article>
     </>
   );

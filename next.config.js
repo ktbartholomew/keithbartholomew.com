@@ -1,10 +1,8 @@
-const withMDX = require('@next/mdx')()
-
 /**
  * @type {import('next').NextConfig}
  */
 const nextConfig = {
-  output: 'export',
+  output: "export",
 
   // Optional: Change links `/me` -> `/me/` and emit `/me.html` -> `/me/index.html`
   trailingSlash: true,
@@ -12,9 +10,7 @@ const nextConfig = {
   // Optional: Prevent automatic `/me` -> `/me/`, instead preserve `href`
   // skipTrailingSlashRedirect: true,
 
-  // Optional: Change the output directory `out` -> `dist`
-  // distDir: 'dist',
-  pageExtensions: ['js', 'jsx', 'ts', 'tsx', 'mdx'],
+  pageExtensions: ["js", "jsx", "ts", "tsx"],
   images: {
     remotePatterns: [
       {
@@ -24,14 +20,11 @@ const nextConfig = {
     ],
   },
   eslint: {
-    ignoreDuringBuilds: true
+    ignoreDuringBuilds: true,
   },
   typescript: {
-    ignoreBuildErrors: true
+    ignoreBuildErrors: true,
   },
-  experimental: {
-    mdxRs: true
-  }
 };
 
-module.exports = withMDX(nextConfig);
+module.exports = nextConfig;

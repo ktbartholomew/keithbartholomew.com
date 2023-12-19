@@ -1,0 +1,83 @@
+pre[class*="language-"] {
+  @apply bg-slate-900;
+  @apply border;
+  @apply border-slate-600;
+  @apply p-4;
+  @apply mb-8;
+}
+
+code[class*="language-"] {
+  background-color: initial;
+  @apply text-slate-100;
+  @apply p-0;
+}
+
+.token.comment,
+.token.prolog,
+.token.cdata,
+.token.doctype {
+  @apply text-slate-400;
+}
+
+.token.punctuation, .token.regex-delimiter {
+  @apply text-amber-300;
+}
+
+.namespace {
+  @apply text-fuchsia-400;
+}
+
+.token.deleted {
+  @apply text-slate-400;
+}
+
+.token.symbol,
+.token.property {
+  @apply text-amber-100;
+}
+
+.token.tag,
+.token.operator {
+  @apply text-pink-300;
+}
+
+.token.keyword {
+  @apply text-fuchsia-300;
+}
+
+.token.boolean {
+  @apply text-red-400;
+}
+
+.token.number,
+.token.hexcode {
+  @apply text-orange-400;
+}
+
+.token.constant,
+.token.function,
+.token.selector {
+  @apply text-blue-300;
+}
+
+.token.string,
+.token.url,
+.token.entity {
+  @apply text-amber-200;
+}
+
+.token.regex {
+    @apply text-lime-200;
+}
+
+.token.class-name {
+  @apply text-amber-300;
+}
+
+.token.property-access {
+  @apply text-amber-100;
+}
+
+.token.builtin {
+  @apply text-lime-200;
+}

@@ -1,6 +1,6 @@
-import LoadingMask from "../components/loading-mask";
 import { Sidebar } from "../components/sidebar";
 import "./globals.css";
+import "./prism.css";
 
 export const metadata = {
   title: {
