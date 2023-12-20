@@ -61,10 +61,10 @@ p {
 }
 
 code {
-  @apply text-green-200;
-  @apply bg-slate-700;
+  @apply text-emerald-200;
+  @apply bg-slate-800;
   @apply rounded-sm;
-  @apply px-1;
+  @apply p-1;
 }
 
 a {
@@ -78,9 +78,25 @@ a:active {
 
 ul, ol {
   @apply mb-8;
-  @apply pl-4;
+  @apply pl-8;
 }
 
 ul {
   list-style-type: square;
+}
+
+ol {
+  list-style-type: decimal;
+}
+
+blockquote {
+  @apply bg-slate-800;
+  @apply border-emerald-600;
+  @apply border-l-[1ch];
+  @apply mb-8;
+  @apply p-4;
+}
+
+blockquote > :last-child {
+  @apply mb-0;
 }
