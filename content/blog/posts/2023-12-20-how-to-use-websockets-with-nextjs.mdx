@@ -1,0 +1,307 @@
+---
+title: "How to use WebSockets with Next.js"
+date: 2023-12-21T03:00:00.000Z
+excerpt: |
+  Learn how to seamlessly integrate WebSockets with your Next.js application, enabling high-throughput, bi-directional communication for real-time features like chat or streaming updates, as this step-by-step guide walks you through creating a custom server, handling WebSocket requests, and connecting to the WebSocket using React, while addressing caveats and adding fun Easter eggs.
+---
+
+_See the full example [on GitHub](https://github.com/ktbartholomew/tanstack-query-pubsub/tree/nextjs-websocket)_
+
+[Next.js](https://nextjs.org/) is a powerful framework for building React applications that have both dynamic back-ends and front-ends. You can build a variety of different apps using Next.js, from a completely statically-generated site (that's what this website is!) to partially server-rendered application, to a completely client-rendered application.
+
+In all of these use cases, Next.js is optimized for the traditional request/response cycle that most of the web is known for. A client sends the server a request for a page or some content, then the server sends the requested content to the client and closes the connection. This works great when the client knows that it needs to get new data, but what about when the server needs to notify the client that something happened or the application needs real-time behavior like chatting or streaming updates from a back-end service.
+
+Enter [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API), a technology that opens a long-lived TCP connection between the client and server and allows both sides to send messages to one another. WebSockets allow high-throughput, bi-directional communication that unlocks a lot of possibilities for rich, real-time applications.
+
+> _You could also use [Server-sent events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) to achieve something similar, but Server-sent events only allow the server to stream data to the client (it's one-way). We're using WebSockets here because they're more widely used and support more use cases like bi-directional communication._
+
+Next.js doesn't support WebSockets out of the box, but getting WebSockets to work alongside a Next.js is pretty straightforward to do.
+
+## Create a custom server
+
+Normally, you start a Next.js application by running a command like `next dev` or `next start`. When you do this, Next.js starts its own HTTP server that listens for incoming requests and serves the desired content for each request.
+
+Next.js allows you to specify your own [custom server](https://nextjs.org/docs/pages/building-your-application/configuring/custom-server), in which you can customize how incoming requests are handled. We'll use this feature to add support for WebSockets while preserving the rest of the usual Next.js functionality.
+
+You could use whatever tools you want to create this server, but I'll use [Express](https://expressjs.com/) because it's a choice I'm familiar with.
+
+1. Create a file named `server.ts`.
+1. Import Express and start its server.
+
+   ```typescript
+   // server.ts
+   import { Server } from "node:http";
+   import express from "express";
+
+   const app = express();
+
+   /**
+    * Start the Express app, get a `http.Server` in return
+    */
+   const server: Server = app.listen(3000);
+   ```
+
+1. When using a custom server, the Next.js application exports itself as a class with a `getRequestHandler()` method. When Express handles an incoming request, call the Next.js request handler immediately.
+
+   ```typescript
+   import next from "next";
+   import { parse } from "node:url";
+
+   /**
+    * Start by creating and preparing a Next.js app.
+    */
+   const nextApp = next({ dev: process.env.NODE_ENV !== "production" });
+   await nextApp.prepare();
+
+   /**
+    * Pass all plain HTTP requests from Express to the Next.js request handler.
+    * `app` is the Express app we started earlier.
+    */
+   app.use((req, res, next) => {
+     nextApp.getRequestHandler()(req, res, parse(req.url, true));
+   });
+   ```
+
+   In this example, I'm passing all incoming requests directly to Next.js. You could also use this technique to only pass _certain_ requests to Next.js, or to alter or authorize incoming requests.
+
+1. Add basic WebSocket handling by writing a handler for the server's [`upgrade`](https://nodejs.org/api/http.html#event-upgrade) event. This handler has two jobs to do—although Next.js doesn't support custom WebSockets out of the box, it actually does use a WebSocket connection for its [Fast Refresh](https://nextjs.org/docs/architecture/fast-refresh) development feature. I don't want to break that feature, so I'll use the Next.js application's `getUpgradeHandler()` when the WebSocket request path is `/_next/webpack-hmr`. Otherwise, I'll do my custom WebSocket handling.
+
+   ```typescript
+   server.on("upgrade", (req, socket, head) => {
+     const { pathname } = parse(req.url || "/", true);
+
+     /**
+      * Pass hot module reloading requests to Next.js
+      */
+     if (pathname === "/_next/webpack-hmr") {
+       nextApp.getUpgradeHandler()(req, socket, head);
+     }
+
+     /**
+      * Use another path for our custom WebSocket handler
+      */
+     if (pathname === "/api/ws") {
+       // TODO: write a custom WebSocket handler
+     }
+   });
+   ```
+
+## Build and run the custom server
+
+Because I wrote `server.ts` using TypeScript, I need to bundle it and convert it to plain JavaScript before I run it. Then, I need to configure my package scripts to run the custom server instead of the one built in to Next.js.
+
+1. Install `esbuild`
+
+   ```bash
+   npm install --save-dev esbuild
+   ```
+
+1. Add a script to `package.json` that uses `esbuild` to bundle the custom server.
+
+   ```json
+   {
+     "scripts": {
+       "bundle": "esbuild server.ts --bundle --platform=node --outdir=dist --external:next*"
+     }
+   }
+   ```
+
+   The `--external:next*` argument prevents `esbuild` from trying to include all of the Next.js source code in our custom server.
+
+1. Modify the other Next.js lifecycle scripts in `package.json` to include our bundling step and run the custom server.
+
+   ```json
+   {
+     "scripts": {
+       "build": "npm run bundle && next build",
+       "dev": "npm run bundle && node dist/server.js",
+       "start": "node dist/server.js"
+     }
+   }
+   ```
+
+## Handle WebSocket requests
+
+Now that I've created a custom server that's capable of handling WebSocket requests, I can write some code to do something with those requests when they're created. In the [example I created](https://github.com/ktbartholomew/tanstack-query-pubsub/tree/nextjs-websocket), I made a service that generates random restaurant orders every few seconds and sends them to all connected WebSocket clients.
+
+1. Install the [`ws`](https://github.com/websockets/ws) library.
+
+   ```bash
+   npm install ws
+   ```
+
+1. Use `ws` to create a handler for WebSocket upgrade requests, but don't listen on a port (Express is already doing that part).
+
+   ```typescript
+   import { WebSocketServer } from "ws";
+
+   const wss = new WebSocketServer({ noServer: true });
+   ```
+
+1. Write a function to handle upgrade reqeusts using `ws`. For convenience, we'll make this function have the exact same signature as the Next.js `getUpgradeHandler()` method.
+
+   ```typescript
+   import { RawData, WebSocket } from "ws";
+   import { IncomingMessage } from "http";
+   import internal from "stream";
+
+   export function handleUpgrade(
+     req: IncomingMessage,
+     socket: internal.Duplex,
+     head: Buffer
+   ) {
+     wss.handleUpgrade(req, socket, head, (client: WebSocket) => {
+       /**
+        * `client` is a single unique WebSocket connection. Here we can subscribe
+        * to backend events that we want to send to the client and handle
+        * messages that the client sends to us.
+        */
+       client.send("hello!");
+
+       client.on("message", (data: RawData, isBinary: boolean) => {
+         console.log(data.toString());
+       });
+     });
+   }
+   ```
+
+1. Add the custom upgrade handler to our custom server's `upgrade` event handler, which I created in the "Create a custom server" section.
+
+   ```typescript
+   import { handleUpgrade } from "./websocket";
+
+   /**
+    * Use another path for our custom WebSocket handler
+    */
+   if (pathname === "/api/ws") {
+     handleUpgrade(req, socket, head);
+   }
+   ```
+
+1. Extend the upgrade handler to do more than just say "hello!". It will subscribe to an instance of [OrderService](https://github.com/ktbartholomew/tanstack-query-pubsub/blob/nextjs-websocket/src/server/order-service.ts) which emits events about random restaurant orders every few seconds.
+
+   ```typescript
+   const orderService = new OrderService();
+
+   export function handleUpgrade(
+     req: IncomingMessage,
+     socket: internal.Duplex,
+     head: Buffer
+   ) {
+     wss.handleUpgrade(req, socket, head, (client: WebSocket) => {
+       orderService.subscribe((order) => {
+         client.send(
+           JSON.stringify({
+             event: "order-received",
+             detail: {
+               order,
+             },
+           })
+         );
+       });
+     });
+   }
+   ```
+
+## Connect to the WebSocket using React
+
+Now that the server is capable of handling WebSocket connections, it's time for the front-end to initiate a WebSocket connection and start receiving data.
+
+1. Create a WebSocket connection in the browser. I needed to add a small check to be sure this was being rendered in the browser, because the `new WebSocket()` constructor would fail if I tried to run it on the server. You could also achieve this with a `useEffect()` hook or something like that.
+
+   ```typescript
+   // src/components/use-orders.ts
+   let ws: WebSocket;
+   if (typeof window !== "undefined") {
+     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+
+     ws = new WebSocket(`${protocol}//${window.location.host}/api/ws`);
+     setInterval(() => {
+       if (ws.readyState !== ws.OPEN) {
+         ws = new WebSocket(`${protocol}//${window.location.host}/api/ws`);
+         return;
+       }
+
+       ws.send(`{"event":"ping"}`);
+     }, 29000);
+   }
+   ```
+
+   I should probably use the [`useRef()`](https://react.dev/reference/react/useRef) hook to manage the reference to the WebSocket instance, but declaring it at the top of my file worked well enough for this example. If you have a multi-page app or only want the WebSocket to be open in certain cases, you should definitely do the extra work to wrap the creation of the WebSocket in a [`useRef()`](https://react.dev/reference/react/useRef)/[`useEffect()`](https://react.dev/reference/react/useEffect) combination so that you can control the set-up and teardown of the connection.
+
+1. Create a custom hook that subscribes to messages from the WebSocket using [`useEffect()`](https://react.dev/reference/react/useEffect). Whenever an order is received, I add it to an array of orders using `useState()`, which triggers the app to re-render including the newly-received order.
+
+   ```typescript
+   export function useOrders() {
+     const [orders, setOrders] = useState<Order[]>([]);
+
+     useEffect(() => {
+       const onMessage = (msg: MessageEvent) => {
+         const event = JSON.parse(msg.data) as { event: string; detail: any };
+
+         if (event.event === "order-received") {
+           setOrders((prev) => {
+             const next = [...prev];
+             next.push(event.detail.order as Order);
+
+             // Limit the array to 12 items
+             if (next.length > 12) {
+               return next.splice(-12);
+             }
+             return next;
+           });
+         }
+       };
+
+       ws.addEventListener("message", onMessage);
+
+       return () => {
+         ws.removeEventListener("message", onMessage);
+       };
+     }, []);
+
+     return { orders };
+   }
+   ```
+
+1. In a view somewhere in the app, use `useOrders()` to get a list of orders that will trigger a re-render whenever a new order is received.
+
+   ```jsx
+   function OrderList() {
+    const { orders } = useOrders();
+
+    return (
+      <ol>
+        {orders.map(o => (
+          <li key={o.id}>
+            <code>{JSON.stringify(o)}</code>
+          </li>
+        ))}
+      </ol>
+    );
+   }
+   ```
+
+You can add as many embellishments to this example as you like, but I've demonstrated how you can stream updates over a WebSocket to your front-end using a lightly-customized Next.js application. The update cadence of the example may not seem much different from traditional polling, but WebSockets are capable of streaming many updates per second, which could be essential for a real-time application. In some cases, keeping a WebSocket open and idle may be more performant than having clients frequently poll your back-end.
+
+## Caveats
+
+<img
+  src="https://i.kym-cdn.com/entries/icons/original/000/040/653/goldblum-quote.jpeg"
+  alt="Your scientists were so preoccupied with whether or not they could…they didn't stop to think if they should"
+  loading="lazy"
+  className="mb-4"
+/>
+
+There are several reasons not to build an app in this way. But what is a blog for, if not for giving impractical advice? Here are some reasons that building WebSocket handling directly into your Next.js application might not be a good idea:
+
+- It prevents you from deploying the app on serverless platforms like Vercel; you have to run the application in a container, server, or other always-on platform. For most providers, this means having to pay a fixed cost just to keep your application running.
+- It breaks Next.js performance features like [automatic static optimization](https://nextjs.org/docs/pages/building-your-application/rendering/automatic-static-optimization). This can make a big difference in the CPU load for services that are able to use that feature.
+- It combines multiple responsibilities into a single unit; A front-end application and a real-time messaging service are probably things that are going to have different scaling and deployment needs. Combining them could be convenient if you would rather deploy a single service, but could be limiting as those services scale.
+
+## Easter Eggs
+
+1. The fake order service is inspired by the "Expo printer" in a kitchen that prints tickets for each order, telling the kitchen staff what they need to prepare. The menu is inspired by In-n-Out Burger.
+1. I spent much more time than necessary styling the tickets to look realistic, including researching actual expo printers and kitchen conventions.
+1. The background image was generated by prompting [DreamStudio by stability.ai](https://beta.dreamstudio.ai/generate)
+1. I learned how to use [Framer Motion](https://www.framer.com/motion/) for this example because I thought it would be fun to see the order tickets "slide" down the rail.
