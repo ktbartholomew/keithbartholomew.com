@@ -1,7 +1,8 @@
 ---
 title: "How to use WebSockets with Next.js"
-date: 2023-12-01T17:00:00.000Z
-excerpt: ""
+date: 2023-12-21T03:00:00.000Z
+excerpt: |
+  Learn how to seamlessly integrate WebSockets with your Next.js application, enabling high-throughput, bi-directional communication for real-time features like chat or streaming updates, as this step-by-step guide walks you through creating a custom server, handling WebSocket requests, and connecting to the WebSocket using React, while addressing caveats and adding fun Easter eggs.
 ---
 
 _See the full example [on GitHub](https://github.com/ktbartholomew/tanstack-query-pubsub/tree/nextjs-websocket)_
@@ -263,6 +264,26 @@ Now that the server is capable of handling WebSocket connections, it's time for 
    }
    ```
 
+1. In a view somewhere in the app, use `useOrders()` to get a list of orders that will trigger a re-render whenever a new order is received.
+
+   ```jsx
+   function OrderList() {
+    const { orders } = useOrders();
+
+    return (
+      <ol>
+        {orders.map(o => (
+          <li key={o.id}>
+            <code>{JSON.stringify(o)}</code>
+          </li>
+        ))}
+      </ol>
+    );
+   }
+   ```
+
+You can add as many embellishments to this example as you like, but I've demonstrated how you can stream updates over a WebSocket to your front-end using a lightly-customized Next.js application. The update cadence of the example may not seem much different from traditional polling, but WebSockets are capable of streaming many updates per second, which could be essential for a real-time application. In some cases, keeping a WebSocket open and idle may be more performant than having clients frequently poll your back-end.
+
 ## Caveats
 
 <img
@@ -274,8 +295,8 @@ Now that the server is capable of handling WebSocket connections, it's time for 
 
 There are several reasons not to build an app in this way. But what is a blog for, if not for giving impractical advice? Here are some reasons that building WebSocket handling directly into your Next.js application might not be a good idea:
 
-- It prevents you from deploying the app on serverless platforms like Vercel; you have to run the application in a container, server, or other always-on platform.
-- It breaks Next.js performance features like [automatic static optimization](https://nextjs.org/docs/pages/building-your-application/rendering/automatic-static-optimization).
+- It prevents you from deploying the app on serverless platforms like Vercel; you have to run the application in a container, server, or other always-on platform. For most providers, this means having to pay a fixed cost just to keep your application running.
+- It breaks Next.js performance features like [automatic static optimization](https://nextjs.org/docs/pages/building-your-application/rendering/automatic-static-optimization). This can make a big difference in the CPU load for services that are able to use that feature.
 - It combines multiple responsibilities into a single unit; A front-end application and a real-time messaging service are probably things that are going to have different scaling and deployment needs. Combining them could be convenient if you would rather deploy a single service, but could be limiting as those services scale.
 
 ## Easter Eggs
