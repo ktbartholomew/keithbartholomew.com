@@ -4,6 +4,7 @@ pre[class*="language-"] {
   @apply border-slate-600;
   @apply p-4;
   @apply mb-8;
+  @apply overflow-x-scroll;
 }
 
 code[class*="language-"] {

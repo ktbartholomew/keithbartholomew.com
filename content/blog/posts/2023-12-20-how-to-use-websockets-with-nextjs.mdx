@@ -1,6 +1,6 @@
 ---
 title: "How to use WebSockets with Next.js"
-date: 2023-12-21T03:00:00.000Z
+date: 2023-12-21T03:59:33.000Z
 excerpt: |
   Learn how to seamlessly integrate WebSockets with your Next.js application, enabling high-throughput, bi-directional communication for real-time features like chat or streaming updates, as this step-by-step guide walks you through creating a custom server, handling WebSocket requests, and connecting to the WebSocket using React, while addressing caveats and adding fun Easter eggs.
 ---
@@ -268,17 +268,17 @@ Now that the server is capable of handling WebSocket connections, it's time for 
 
    ```jsx
    function OrderList() {
-    const { orders } = useOrders();
+     const { orders } = useOrders();
 
-    return (
-      <ol>
-        {orders.map(o => (
-          <li key={o.id}>
-            <code>{JSON.stringify(o)}</code>
-          </li>
-        ))}
-      </ol>
-    );
+     return (
+       <ol>
+         {orders.map((o) => (
+           <li key={o.id}>
+             <code>{JSON.stringify(o)}</code>
+           </li>
+         ))}
+       </ol>
+     );
    }
    ```
 

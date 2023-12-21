@@ -26,7 +26,7 @@ export default function RootLayout({
               <Sidebar />
             </div>
           </div>
-          <div className="flex-auto p-4 md:p-8 max-w-[96ch]">{children}</div>
+          <div className="flex-auto p-4 md:p-8 md:w-3/4 max-w-[96ch]">{children}</div>
         </div>
       </body>
     </html>
