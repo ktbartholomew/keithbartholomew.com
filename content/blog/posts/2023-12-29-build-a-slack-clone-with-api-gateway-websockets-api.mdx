@@ -1,0 +1,112 @@
+---
+title: Build a Slack Clone with an API Gateway WebSockets API
+date: 2023-12-28T14:00:00.000Z
+excerpt: ""
+---
+
+_See the full example [on GitHub](https://github.com/ktbartholomew/serverless-slack-clone)_
+
+In a [previous blog post](/blog/posts/2023-12-20-how-to-use-websockets-with-nextjs/) I walked through the process of creating a [Next.js](https://nextjs.org/) application with a very simple WebSocket connection for streaming updates from the server. In that post, I explained that the task of running your own WebSocket-capable server might be a burden for some people, especially if you have a mostly serverless deployment model.
+
+So I got to thinking, "Is there a way to run a WebSocket-based service without running your own servers?" There are SaaS vendors that offer real-time messaging as a service, like [Ably](https://ably.com/) and [Pusher](https://pusher.com/). But I was especially interested in AWS' [API Gateway WebSockets API](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api.html) product, which offers a serverless WebSocket broker with a lot of options for developers to customize how those WebSocket connections fit in to the rest of their application.
+
+I decided to build a clone of [Slack](https://slack.com/) to demonstrate some real-world scenarios using only API Gateway, Lambda, and DynamoDB.
+
+## Overview
+
+![Several browser windows, each running the Slack clone demo](/serverless-slack-clone-app.png)
+
+## DynamoDB data model
+
+The application uses a single DynamoDB table that leverages the [single-table design pattern](https://www.alexdebrie.com/posts/dynamodb-single-table/). In this pattern, I have two generic columns named `pk` and `sk` that correspond to the primary key and sort key, respectively. I also created an inverted index named `sk-index` that allows me to query on the `sk` column directly, which helps me make a variety of queries to list items related to another item.
+
+### Rooms
+
+Much of the data model revolves around rooms, which I use to represent both channels and DMs. I also need to know which users, WebSocket connections, and messages are associated with each room.
+
+<div className="overflow-x-scroll">
+  <table className="table-auto mb-4">
+    <thead>
+      <tr>
+        <th className="bg-sky-700">pk</th>
+        <th className="bg-emerald-700">sk</th>
+        <th>conn</th>
+        <th>message</th>
+        <th>ttl</th>
+        <th>user</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td rowSpan={4}>ROOM#general</td>
+        <td>ROOM</td>
+      </tr>
+      <tr>
+        <td>USER#abcdefghijkl</td>
+      </tr>
+      <tr>
+        <td>CONN#Q000000000</td>
+        <td>CONN#Q000000000</td>
+      </tr>
+      <tr>
+        <td>MESSAGE#1703806209644</td>
+        <td></td>
+        <td>Hello,&nbsp;world!</td>
+        <td>1703892609</td>
+        <td>USER#abcdefghijkl</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+This model supports the following access patterns:
+
+- List rooms (`SELECT * FROM "table"."sk-index" WHERE sk = 'ROOM'`)
+- List all users in a room (`SELECT * FROM "table" WHERE pk = 'ROOM#general' AND begins_with(sk, 'USER#')`)
+- List all WebSocket clients subscribed to a room (`SELECT * FROM "table" WHERE pk = 'ROOM#general' AND begins_with(sk, 'CONN#')`)
+- List all messages in a room (`SELECT * FROM "table" WHERE pk = 'ROOM#general' AND begins_with(sk, 'MESSAGE#')`)
+
+### Users
+
+Users are persistent entities, and I use their records to track things like persistence (the last time they were seen) and rate-limiting (to ensure they aren't spamming messages). The user collection is also a handy place to record a list of the WebSocket connections open for that user so I can notify the user of certain events.
+
+<div className="overflow-x-auto">
+  <table className="table-auto">
+    <thead>
+      <tr>
+        <th className="bg-sky-700">pk</th>
+        <th className="bg-emerald-700">sk</th>
+        <th>handle</th>
+        <th>presence</th>
+        <th>sendMessageLimit</th>
+        <th>sendMessageTtl</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td rowSpan={2}>USER#abcdefghijkl</td>
+        <td>USER</td>
+        <td>alice</td>
+        <td>1703806209</td>
+        <td>58</td>
+        <td>1703806269</td>
+      </tr>
+      <tr>
+        <td>CONN#Q000000000</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+This model supports the following access patterns:
+
+- List all users (`SELECT * FROM "table"."sk-index" WHERE sk = 'USER'`)
+- List all WebSocket connections for a given user (`SELECT * FROM "table" WHERE pk = "USER#abcdefghijkl" AND begins_with(sk, "CONN#")`)
+
+## Cost
+
+I built this demo over the course of about a week, and the whole thing cost me exactly $0.08. Most of that cost came from a few times where I turned on an automated chat bot and sent myself and three other WebSocket clients 1,500 messages/minute for several minutes. (I implemented rate limiting shortly after)
+
+As with many serverless products, this is free/cheap to run at small scale, but could run into surprise costs at large scale. For WebSockets APIs, API Gateway charges for both connection minutes and messages sent. If you had 1,000 clients connected 24/7, your cost for simply keeping those connections open would be $10.95. If you add to that a fairly conservative 3,000 messages sent per minute (say, if each client was sending a ping every 20 seconds), then the cost quickly climbs to $142.35, including the connection costs.
+
+Although you only pay for what you use, the price you pay scales directly with how heavily-used the service is. This could be problematic if you have a large number of users or a very chatty application. If real-time communication is the core of your business, you might be better off building a more serverful system that's less elastic but more predictable.

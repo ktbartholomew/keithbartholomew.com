@@ -100,3 +100,13 @@ blockquote {
 blockquote > :last-child {
   @apply mb-0;
 }
+
+table td, table th {
+  @apply border;
+  @apply border-slate-100;
+  @apply p-2;
+}
+
+table th {
+  @apply bg-slate-700;
+}
