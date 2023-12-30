@@ -67,7 +67,7 @@ code {
   @apply p-1;
 }
 
-a {
+a, a code, code a {
   @apply text-blue-400;
 }
 
@@ -99,6 +99,10 @@ blockquote {
 
 blockquote > :last-child {
   @apply mb-0;
+}
+
+table {
+  @apply mb-4;
 }
 
 table td, table th {
