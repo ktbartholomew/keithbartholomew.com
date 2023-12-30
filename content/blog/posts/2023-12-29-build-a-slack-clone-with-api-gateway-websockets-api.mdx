@@ -8,13 +8,291 @@ _See the full example [on GitHub](https://github.com/ktbartholomew/serverless-sl
 
 In a [previous blog post](/blog/posts/2023-12-20-how-to-use-websockets-with-nextjs/) I walked through the process of creating a [Next.js](https://nextjs.org/) application with a very simple WebSocket connection for streaming updates from the server. In that post, I explained that the task of running your own WebSocket-capable server might be a burden for some people, especially if you have a mostly serverless deployment model.
 
-So I got to thinking, "Is there a way to run a WebSocket-based service without running your own servers?" There are SaaS vendors that offer real-time messaging as a service, like [Ably](https://ably.com/) and [Pusher](https://pusher.com/). But I was especially interested in AWS' [API Gateway WebSockets API](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api.html) product, which offers a serverless WebSocket broker with a lot of options for developers to customize how those WebSocket connections fit in to the rest of their application.
+So I got to thinking, "Is there a way to run a WebSocket-based service in a serverless way?" There are SaaS vendors that offer real-time messaging as a service, like [Ably](https://ably.com/) and [Pusher](https://pusher.com/). But I was especially interested in AWS' [API Gateway WebSockets API](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api.html) product, which offers a serverless WebSocket broker with a lot of options for developers to customize how those WebSocket connections fit in to the rest of their application.
 
 I decided to build a clone of [Slack](https://slack.com/) to demonstrate some real-world scenarios using only API Gateway, Lambda, and DynamoDB.
 
 ## Overview
 
 ![Several browser windows, each running the Slack clone demo](/serverless-slack-clone-app.png)
+
+The demo consists of a front-end [Next.js](https://nextjs.org/) app that makes a WebSocket connection to an [API Gateway WebSockets API](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api.html) and uses that to stream updates about messages, when users are typing, and which users have an active connection.
+
+The WebSockets API forwards every request to one of two [Lambda functions](https://docs.aws.amazon.com/lambda/latest/dg/welcome.html). One handles when clients connect and disconnect, and the other handles all other application events. Dividing this work between two Lambdas was an arbitrary choice I made; you might choose to split work between more functions if each of your API operations has different scaling needs. Conversely, you might choose to keep API operations combined into a single Lambda to improve your cold-start ratio.
+
+Each Lambda stores state in a [DynamoDB](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html) table, which stores long-term information about channels and users, and also stateful information about the ephemeral WebSocket connections that are currently open. Depending on the API operation, these Lambdas will also publish events to relevant WebSocket connections. They do this inbound and outbound communication directly; A more advanced application might choose to decouple these tasks by publishing an event to an event bus, then letting a separate task handle the outbound communications.
+
+## Create the infrastructure
+
+_**TL;DR:** do everything in this section by running `npm ci && npm run publish` in the demo repo._
+
+I've created a couple [CloudFormation templates](https://github.com/ktbartholomew/serverless-slack-clone/tree/main/cloudformation) to provision everything this demo needs, but I'll walk through some of the resources one-by-one to explain them.
+
+1. **Prep step: Create an S3 bucket for Lambda assets.**
+
+   These resources aren't really part of the demo itself, but make deploying it easier. I created an S3 bucket into which I can write Lambda code as ZIP files, and record the name of the bucket in [AWS Systems Manager Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html).
+
+   ```yaml
+   S3Bucket:
+     Type: AWS::S3::Bucket
+     Properties:
+       AccessControl: Private
+       VersioningConfiguration:
+         Status: Enabled
+       LifecycleConfiguration:
+         Rules:
+           - Id: DeleteOldVersions
+             Status: Enabled
+             NoncurrentVersionExpirationInDays: 30
+             AbortIncompleteMultipartUpload:
+               DaysAfterInitiation: 7
+
+   Parameter:
+     Type: AWS::SSM::Parameter
+     Properties:
+       Name: !Sub /${ProjectName}/s3-bucket
+       Type: String
+       Value: !Ref S3Bucket
+   ```
+
+1. **Build and upload the Lambda code.**
+
+   Bundle, zip, and upload the code for each of the Lambda functions we're about to create.
+
+   ```bash
+   npm -w packages/test-connect run build && npm -w packages/test-connect run upload
+   npm -w packages/test-default run build && npm -w packages/test-default run upload
+   ```
+
+   These npm scripts use `esbuild` to bundle the handler code into a single file, compresses that file into a `.zip` file, then uploads the `.zip` file to S3. When bundling with `esbuild`, I specify `--external:@aws-sdk*` to omit the AWS SDKs from the bundle, because those packages are already globally available as part of the `nodejs20.x` Lambda runtime.
+
+1. **Create the DynamoDB table.**
+
+   This table uses `pk` and `sk` as its primary key and sort key fields, respectively. This is to accommodate the [single-table design pattern](https://www.alexdebrie.com/posts/dynamodb-single-table/) which I'll explain more later. I'll also create an [inverted index](https://aws.amazon.com/tutorials/design-a-database-for-a-mobile-app-with-dynamodb/module-4/#Inverted_Indexes) to support a variety of relational queries. (In the inverted index, `sk` is the partition key and `pk` is the sort key, thus inverting the main index pattern)
+
+   ```yaml
+   DynamoDBTable:
+     Type: AWS::DynamoDB::Table
+     Properties:
+       TableName: !Ref ProjectName
+       BillingMode: PAY_PER_REQUEST
+       KeySchema:
+         - AttributeName: pk
+           KeyType: HASH
+         - AttributeName: sk
+           KeyType: RANGE
+       GlobalSecondaryIndexes:
+         - IndexName: sk-index
+           KeySchema:
+             - AttributeName: sk
+               KeyType: HASH
+           Projection:
+             ProjectionType: ALL
+         - IndexName: conn
+           KeySchema:
+             - AttributeName: conn
+               KeyType: HASH
+           Projection:
+             ProjectionType: KEYS_ONLY
+       AttributeDefinitions:
+         - AttributeName: pk
+           AttributeType: S
+         - AttributeName: sk
+           AttributeType: S
+         - AttributeName: conn
+           AttributeType: S
+       TimeToLiveSpecification:
+         AttributeName: ttl
+         Enabled: true
+   ```
+
+   I've also created an index on the `conn` attribute to support pruning connection records when a user disconnects, and a [time to live](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/TTL.html) on the `ttl` attribute to prune messages that are over a day old. I'm only doing the TTL thing to avoid growing storage costs for the demo; you could easily allow DynamoDB to store multiple terabytes worth of messages, or implement a tiered storage system that migrates older messages to S3 when they reach a certain age.
+
+1. **Create the (empty) API Gateway.**
+
+   There's not a lot to do to make an API Gateway on its own. This is only an empty API and production stage, and I'll associate more resources with it later.
+
+   ```yaml
+   ApiGateway:
+     Type: AWS::ApiGatewayV2::Api
+     Properties:
+       Name: !Ref ProjectName
+       ProtocolType: WEBSOCKET
+       RouteSelectionExpression: "$request.body.event"
+
+   ApiGatewayStage:
+     Type: AWS::ApiGatewayV2::Stage
+     Properties:
+       ApiId: !Ref ApiGateway
+       StageName: production
+       AutoDeploy: true
+       DefaultRouteSettings:
+         ThrottlingRateLimit: 10
+         ThrottlingBurstLimit: 100
+       StageVariables:
+         DYNAMODB_TABLE_NAME: !Ref DynamoDBTable
+   ```
+
+   I'm configuring the API Gateway to parse each incoming request as JSON and to use the `event` property of that message to route requests. I'm also configuring the deployment stage to limit clients to about 10 requests per second, while allowing temporary bursts above that limit. I'm _pretty_ sure that limit is applied per connection and not to all connections in aggregate.
+
+1. **Create an IAM role for the Lambda handlers.**
+
+   Both Lambdas will share the same IAM role, which has policies that allow it to write its logs to CloudWatch Logs (a basic Lambda requirement), write traces to AWS X-Ray, and to do the necessary read/write operations in DynamoDB and API Gateway.
+
+   ```yaml
+   LambdaRole:
+     Type: AWS::IAM::Role
+     Properties:
+       RoleName: !Sub ${ProjectName}-lambdas
+       AssumeRolePolicyDocument:
+         Version: "2012-10-17"
+         Statement:
+           - Effect: Allow
+             Principal:
+               Service:
+                 - lambda.amazonaws.com
+             Action:
+               - sts:AssumeRole
+       Policies:
+         - PolicyName: "LambdaBasicExecution"
+           PolicyDocument:
+             Version: "2012-10-17"
+             Statement:
+               - Effect: Allow
+                 Action:
+                   - logs:CreateLogGroup
+                 Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
+               - Effect: Allow
+                 Action:
+                   - logs:CreateLogStream
+                   - logs:PutLogEvents
+                 Resource:
+                   - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${ProjectName}*:*"
+               - Effect: Allow
+                 Action:
+                   - xray:PutTraceSegments
+                   - xray:PutTelemetryRecords
+                 Resource: "*"
+         - PolicyName: "ResourceAccess"
+           PolicyDocument:
+             Version: "2012-10-17"
+             Statement:
+               - Effect: Allow
+                 Action:
+                   - dynamodb:Query
+                   - dynamodb:Scan
+                   - dynamodb:GetItem
+                   - dynamodb:PutItem
+                   - dynamodb:UpdateItem
+                   - dynamodb:DeleteItem
+                   - dynamodb:BatchGetItem
+                   - dynamodb:BatchWriteItem
+                 Resource:
+                   - !GetAtt DynamoDBTable.Arn
+                   - !Sub "${DynamoDBTable.Arn}/index/*"
+               - Effect: Allow
+                 Action:
+                   - execute-api:Invoke
+                   - execute-api:ManageConnections
+                 Resource: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/*/*"
+   ```
+
+1. **Create the Lambda handlers and supporting resources.**
+
+   I'll create a log group with a conservative retention policy (again, trying to control costs) and then create the Lambda function itself. After that, I'll create a resource policy to allow API Gateway to invoke the Lambda, and register the Lambda function as an "integration" with API Gateway, so it can be used with a variety of routes.
+
+   ```yaml
+   ConnectLogGroup:
+     Type: AWS::Logs::LogGroup
+     Properties:
+       LogGroupName: !Sub "/aws/lambda/${ProjectName}-connect"
+       RetentionInDays: 7
+
+   ConnectLambda:
+     Type: AWS::Lambda::Function
+     Properties:
+       FunctionName: !Sub ${ProjectName}-connect
+       Handler: index.handler
+       Runtime: nodejs20.x
+       Architectures:
+         - arm64
+       TracingConfig:
+         Mode: Active
+       MemorySize: 1800
+       Role: !GetAtt LambdaRole.Arn
+       Code:
+         S3Bucket: !Ref AssetBucketName
+         S3Key: connect.zip
+       Environment:
+         Variables:
+           TABLE_NAME: !Ref DynamoDBTable
+       LoggingConfig:
+         LogGroup: !Ref ConnectLogGroup
+
+   ConnectPermission:
+     Type: AWS::Lambda::Permission
+     Properties:
+       Action: lambda:InvokeFunction
+       FunctionName: !Ref ConnectLambda
+       Principal: apigateway.amazonaws.com
+       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/*"
+
+   ConnectIntegration:
+     Type: AWS::ApiGatewayV2::Integration
+     Properties:
+       ApiId: !Ref ApiGateway
+       IntegrationType: AWS_PROXY
+       IntegrationUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ConnectLambda.Arn}/invocations"
+       IntegrationMethod: POST
+       PayloadFormatVersion: "1.0"
+   ```
+
+   There's a lot going on there:
+
+   - I'm manually creating the log group so that I can control its retention policy. If I didn't do this, AWS would create a log group automatically, but that log group would be configured to store all its logs _forever_ and would not be deleted after I delete the other resources.
+   - I'm using the `arm64` (AKA "Graviton") architecture for the better price-performance, and because I have no x86-specific dependencies.
+   - I'm setting the function memory to 1,800 MB in order to be slightly above the [magic threshold of 1,769 MB at which Lambdas have 1vCPU of compute capacity](https://docs.aws.amazon.com/lambda/latest/dg/configuration-function-common.html#:~:text=At%201%2C769%20MB%2C%20a%20function%20has%20the%20equivalent%20of%20one%20vCPU).
+   - The wildcards when configuring API gateway permissions are a little opaque to me; GitHub Copilot helped me write them and I'm honestly not sure how I would have arrived at the correct values on my own.
+
+1. **Register the Lambdas with API Gateway routes.**
+
+   The `ConnectIntegration` resource I created before doesn't actually modify the API Gateway API; it only indicates that the Lambda is _available_ as an integration. I'll make routes for each API operation that I want to associate with one of the Lambdas.
+
+   ```yaml
+   ConnectRoute:
+     Type: AWS::ApiGatewayV2::Route
+     Properties:
+       ApiId: !Ref ApiGateway
+       RouteKey: $connect
+       Target: !Sub integrations/${ConnectIntegration}
+
+   DisconnectRoute:
+     Type: AWS::ApiGatewayV2::Route
+     Properties:
+       ApiId: !Ref ApiGateway
+       RouteKey: $disconnect
+       Target: !Sub integrations/${ConnectIntegration}
+
+   SendMessageRoute:
+     Type: AWS::ApiGatewayV2::Route
+     Properties:
+       ApiId: !Ref ApiGateway
+       RouteKey: sendMessage
+       Target: !Sub integrations/${DefaultIntegration}
+   ```
+
+   For each route, `RouteKey` corresponds to either the `$connect` or `$disconnect` defaults built in to API Gateway, or to the value of the `event` property in the request body.
+
+## Test the WebSocket API via the CLI
+
+This is an optional step, but was a very helpful way for me to understand exactly what the WebSocket API was doing. It requires the [`wscat`](https://github.com/websockets/wscat) utility.
+
+```bash
+wscat --connect $(aws ssm get-parameter --name /serverless-slack-clone/websocket-url --query Parameter.Value --output text)
+> {"event": "joinRoom", "detail": {"room": "general"} }
+```
+
+`wscat` lets you type and send messages on a WebSocket connection and to see responses emitted by the API. In this demo, every message has `event` and `detail` properties, in which `event` indicates what type of operation is being done and `detail` includes open-ended details about the operation. [The available types are defined in the demo repo](https://github.com/ktbartholomew/serverless-slack-clone/blob/main/packages/test-default/src/events/types.ts).
 
 ## DynamoDB data model
 
