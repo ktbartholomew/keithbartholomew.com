@@ -63,7 +63,9 @@ code[class*="language-"] {
 
 .token.string,
 .token.url,
-.token.entity {
+.token.entity,
+.token.key,
+.token.variable {
   @apply text-amber-200;
 }
 

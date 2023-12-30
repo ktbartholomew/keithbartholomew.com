@@ -1,7 +1,8 @@
 ---
 title: Build a Slack Clone with an API Gateway WebSockets API
 date: 2023-12-28T14:00:00.000Z
-excerpt: ""
+excerpt: |
+  Discover how to create a serverless WebSocket-based chat application using AWS API Gateway, Lambda, and DynamoDB, with a detailed walkthrough and code examples available on GitHub, exploring the architecture, infrastructure setup, and cost considerations.
 ---
 
 _See the full example [on GitHub](https://github.com/ktbartholomew/serverless-slack-clone)_
@@ -10,7 +11,7 @@ In a [previous blog post](/blog/posts/2023-12-20-how-to-use-websockets-with-next
 
 So I got to thinking, "Is there a way to run a WebSocket-based service in a serverless way?" There are SaaS vendors that offer real-time messaging as a service, like [Ably](https://ably.com/) and [Pusher](https://pusher.com/). But I was especially interested in AWS' [API Gateway WebSockets API](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api.html) product, which offers a serverless WebSocket broker with a lot of options for developers to customize how those WebSocket connections fit in to the rest of their application.
 
-I decided to build a clone of [Slack](https://slack.com/) to demonstrate some real-world scenarios using only API Gateway, Lambda, and DynamoDB.
+I decided to build a clone of [Slack](https://slack.com/) to demonstrate some real-world communication scenarios using only API Gateway, Lambda, and DynamoDB.
 
 ## Overview
 
@@ -283,11 +284,9 @@ I've created a couple [CloudFormation templates](https://github.com/ktbartholome
 
    For each route, `RouteKey` corresponds to either the `$connect` or `$disconnect` defaults built in to API Gateway, or to the value of the `event` property in the request body.
 
-
-
 ## DynamoDB data model
 
-The application uses a single DynamoDB table that leverages the [single-table design pattern](https://www.alexdebrie.com/posts/dynamodb-single-table/). In single-table design, you overload the DynamoDB partition and sort keys to allow them to represent multiple collections of items, as well as relationships between items. I do this by including additional information about the type of item being represented in the `pk` and `sk` columns. For example, I have a record like `{"pk": "ROOM#general", "sk": "ROOM"}` that represents a chat room itself, and additional records like `{"pk": "ROOM#general", "sk": "USER#<userId>"}` that represent each user that has joined the room. The general pattern that I followed is that records like  `{"pk": "THING#<id>", "sk": "THING"}` represent the thing itself along with its metadata, and records like  `{"pk": "THING#<id>", "sk": "RELATION#<id>"}` represent an item _related_ to the original thing.
+The application uses a single DynamoDB table that leverages the [single-table design pattern](https://www.alexdebrie.com/posts/dynamodb-single-table/). In single-table design, you overload the DynamoDB partition and sort keys to allow them to represent multiple collections of items, as well as relationships between items. I do this by including additional information about the type of item being represented in the `pk` and `sk` columns. For example, I have a record like `{"pk": "ROOM#general", "sk": "ROOM"}` that represents a chat room itself, and additional records like `{"pk": "ROOM#general", "sk": "USER#<userId>"}` that represent each user that has joined the room. The general pattern that I followed is that records like `{"pk": "THING#<id>", "sk": "THING"}` represent the thing itself along with its metadata, and records like `{"pk": "THING#<id>", "sk": "RELATION#<id>"}` represent an item _related_ to the original thing.
 
 Following the single-table design pattern, I have two generic columns named `pk` and `sk` that correspond to the primary key and sort key, respectively. I also created an [inverted index](https://aws.amazon.com/tutorials/design-a-database-for-a-mobile-app-with-dynamodb/module-4/#Inverted_Indexes) named `sk-index` that allows me to query on the `sk` column directly, which helps me make a variety of queries to list the items related to another item.
 
@@ -391,11 +390,36 @@ All of the business logic of the demo is handled by two Lambda functions. One ha
 
 ### Handling connections
 
+API Gateway has two built-in events, `$connect` and `$disconnect`, to handle new connections and terminating connections, respectively. I have the Lambda at [`packages/test-connect`](https://github.com/ktbartholomew/serverless-slack-clone/blob/main/packages/test-connect/src/index.ts) handle both of these. The event payload includes `event.requestContext.eventType` which is either `CONNECT` or `DISCONNECT`, so the function is able to handle each type differently.
+
+The connection Lambda does _extremely_ primitive authentication—it looks for _any_ value in either an `Authorization` header or an `?authorization` query string. It does no validation to determine whether that is a valid authorization token. The only purpose of this "authorization" is to identify which user has connected. After all, it's just a demo!
+
+When a user connects, the connection Lambda adds items to DynamoDB with the user's connection ID for every room the user has joined. This makes it easier for other event handlers to quickly identify all the connections that are currently subscribed to any given room.
+
+When a user disconnects, the Lambda looks for every record of that connection's ID and deletes it from DynamoDB so that future events stop being sent to it. (Trying to send messages to a closed connection fails pretty gracefully, but it's not very efficient to try to send messages that we know will fail)
+
 ### Handling incoming messages
+
+After a user connects, they are able to send and receive messages on the open connection. Each of these messages looks something like `{"event": "sendMessage", "detail": {} }`. The `event` property is required so that API Gateway will accept and route the request to the Lambda, and contents of the `detail` property will vary depending on the value of `event`.
+
+Some of the message types (like `listRooms` and `listUsers`) follow a request/response cycle and would work fine in a REST API; I just didn't want to create a _second_ API for this purpose. Each of the event types is just handled by a [big `switch` statement](https://github.com/ktbartholomew/serverless-slack-clone/blob/main/packages/test-default/src/index.ts#L23-L38):
+
+- `joinRoom`: Creates a record indicating that a user would like to subscribe to messages in a room. Notifies other users in that room that a new user has joined.
+- `listMessages`: Lists all messages in a room. Used to retrieve the message history when a user first opens a room in their app.
+- `listUsers`: Lists all users and their presence status. Used to retrieve the current presence status for all users.
+- `sendMessage`: Sends a message to a room. Notifies all users in that room of the received message.
+- `updatePresence`: Updates the timestamp at which the user was last actively connected. The app sends this message every minute or so as long as it's connected. Other users may observe this value and show the user as "away" if the presence timestamp is too old. Notifies all users in all rooms of the received message.
+- `userTyping`: Indicates that a user is composing a message. Notifies all users in the relevant room of the received message.
 
 ### Sending messages to clients
 
-Because my Lambda functions aren't actually handling WebSockets directly, they don't communicate back to clients via a direct method like `WebSocket.send()`. Instead, API Gateway exposes an HTTP endpoint that my application can `POST` a message to, and API Gateway will forward that message to the client. This endpoint has a URL like `https://<apiDomain>/<stage>/@connections/<connectionId>`. Each message includes the client's connection ID at `event.requestContext.connectionId`, so sending responses directly back to the client is pretty straightforward. However, to broadcast a message to other clients (like when notifying them of a new message), I have to look up the relevant connection IDs from DynamoDB.
+Because my Lambda functions aren't actually handling WebSockets directly, they don't communicate back to clients via a direct method like `WebSocket.send()`. Instead, API Gateway exposes an HTTP endpoint that my application can `POST` a message to, and API Gateway will forward that message to the client. This endpoint has a URL like
+
+```handlebars
+https://{{ apiDomain }}/{{ stage }}/@connections/{{ connectionId }}
+```
+
+Each message includes the client's connection ID at `event.requestContext.connectionId`, so sending responses directly back to the client is pretty straightforward. However, to broadcast a message to other clients (like when notifying them of a new message), I have to look up the relevant connection IDs from DynamoDB.
 
 The `@connections` endpoint is secured by IAM authorization, meaning I have to sign each request with [AWS Signature v4](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_aws-signing.html) using the [aws4](https://www.npmjs.com/package/aws4) npm package.
 
