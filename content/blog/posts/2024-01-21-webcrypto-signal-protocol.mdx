@@ -1,0 +1,46 @@
+---
+title: End-to-end encryption using WebCrypto APIs and the Signal Protocol
+date: 2024-01-21T23:45:00Z
+excerpt: |
+  TBD
+---
+
+_See the full example [on GitHub](https://github.com/ktbartholomew/webcrypto-signal-protocol) and [play with the demo](https://ktbartholomew.github.io/webcrypto-signal-protocol/)_
+
+Whenver I build apps and services, I always dread handling users' sensitive data. Things like passwords or personal information need to be treated very carefully, because any accidental disclosure of that data is catastrophic to the users themselves, as well as their trust in the service. There's a lot of pressure in handling people's data safely! Regardless of how well a service handles sensitive data, users still have to put a lot of trust in how the service handles that data, both intentionally and unintentionally. The service might inspect or sell users' data, accidentally disclose it as part of a security incident, or be compelled to disclose it by a government entity.
+
+End-to-end encryption solves many of these problems by encrypting data before it leaves a user's device and not decrypting it until it reaches the desired destination. Services like [iMessage](https://support.apple.com/guide/security/imessage-security-overview-secd9764312f/1/web/1), [WhatsApp](https://faq.whatsapp.com/820124435853543/), and [Signal](https://signal.org/docs/) all use end-to-end encryption to ensure the privacy of their users' data.
+
+As a developer who lives in the world of web apps and web browsers, this kind of end-to-end encryption always seemed out of reach to me. But the introduction of the [SubtleCrypto](https://www.w3.org/TR/WebCryptoAPI/#subtlecrypto-interface) browser API has made a lot of the low-level cryptography needed for end-to-end encryption easily accessible in any modern web browser.
+
+But comprehensive privacy involves a lot more steps than "just encrypt it." There are a lot of subtle pitfalls you could make to accidentally compromise encryption keys or expose messages to outside tampering. “Don't roll your own crypto" is sage advice, so I wanted to try to implement a robust and trusted protocol.
+
+So, I decided to try to implement a portion of the Signal Protocol called [X3DH](https://www.signal.org/docs/specifications/x3dh/).
+
+## Cryptography primer
+
+X3DH is a comprehensive protocol for doing [key exchange](https://en.wikipedia.org/wiki/Key_exchange), which is a process that two parties use to securely agree on a secret encryption key that they can use to communicate with each other. To understand X3DH, I first needed to understand the basics of key exchange.
+
+### Public key cryptography
+
+At the heart of most of the cryptography in the Signal protocol is the concept of **public key cryptography**. In public key cryptography, each party generates both a public key and a private key, called a "key pair". They can safely share their public key with anybody while keeping their private key a secret. These key pairs have some valuable capabilities:
+
+- **Encryption**: If Alice wants to send a message to Bob, she can use Bob's public key to encrypt the message in a way that only Bob can decrypt.
+- **Decryption**: Bob can use his private key to decrypt any message that was encrypted with his public key.
+- **Signing**: Alice can use her private key to "sign" a message, which proves that she was the one who created and signed the message.
+- **Verification**: Bob (or anyone else) can use Alice's public key to verify her signature, proving that a message was in fact signed by Alice.
+
+> You use public key cryptography every day! Most websites use HTTPS to secure traffic using a public certificate and a private key. [Credit cards with an EMV chip](https://www.emvco.com/knowledge-hub/what-is-the-role-of-elliptic-curve-cryptography-in-an-emv-chip-payment/) also use public and private elliptic curve keys to authenticate transactions.
+
+### Diffie-Hellman Key Exchange
+
+Key exchange is an important step in public key protocols, because simply encrypting each message with the other party's public key would make it trivial for an attacker who discovered a private key to decrypt all other messages that were encrypted with the same key. To avoid this problem, key exchange provides a way for two users use an insecure channel to agree on a temporary key that they will then use to encrypt the rest of their conversation.
+
+[Diffie-Hellman Key Exchange](https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange) is a method for using two parties' key pairs to securely agree on a _separate key_ that they can use to encrypt the rest of their conversation. A simple Diffie-Hellman exchange follows these steps: 
+
+1. Alice sends Bob her public key.
+1. Bob sends Alice his public key.
+1. Alice computes a new key: `var sharedKey = DH(alicePrivate, bobPublic)`
+1. Bob computes a new key: `var sharedKey = DH(bobPrivate, alicePublic)`
+
+After these steps, the `sharedKey` the Alice and Bob each computed is _identical_, and nobody know this key except the two of them. They can now use this key to communicate with each other securely.
