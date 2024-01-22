@@ -1,11 +1,11 @@
 ---
-title: End-to-end encryption using WebCrypto APIs and the Signal Protocol
+title: End-to-end encryption using WebCrypto APIs and Diffie-Hellman Key Exchange
 date: 2024-01-21T23:45:00Z
 excerpt: |
   TBD
 ---
 
-_See the full example [on GitHub](https://github.com/ktbartholomew/webcrypto-signal-protocol) and [play with the demo](https://ktbartholomew.github.io/webcrypto-signal-protocol/)_
+_[Play with the demo](https://ktbartholomew.github.io/webcrypto-signal-protocol/) and view the source code [on GitHub](https://github.com/ktbartholomew/webcrypto-signal-protocol)_
 
 Whenver I build apps and services, I always dread handling users' sensitive data. Things like passwords or personal information need to be treated very carefully, because any accidental disclosure of that data is catastrophic to the users themselves, as well as their trust in the service. There's a lot of pressure in handling people's data safely! Regardless of how well a service handles sensitive data, users still have to put a lot of trust in how the service handles that data, both intentionally and unintentionally. The service might inspect or sell users' data, accidentally disclose it as part of a security incident, or be compelled to disclose it by a government entity.
 
@@ -13,17 +13,11 @@ End-to-end encryption solves many of these problems by encrypting data before it
 
 As a developer who lives in the world of web apps and web browsers, this kind of end-to-end encryption always seemed out of reach to me. But the introduction of the [SubtleCrypto](https://www.w3.org/TR/WebCryptoAPI/#subtlecrypto-interface) browser API has made a lot of the low-level cryptography needed for end-to-end encryption easily accessible in any modern web browser.
 
-But comprehensive privacy involves a lot more steps than "just encrypt it." There are a lot of subtle pitfalls you could make to accidentally compromise encryption keys or expose messages to outside tampering. “Don't roll your own crypto" is sage advice, so I wanted to try to implement a robust and trusted protocol.
+I'm going to use the SubtleCrypto WebCrypto interface to do simple end-to-end encryption.
 
-So, I decided to try to implement a portion of the Signal Protocol called [X3DH](https://www.signal.org/docs/specifications/x3dh/).
+## Public key cryptography
 
-## Cryptography primer
-
-X3DH is a comprehensive protocol for doing [key exchange](https://en.wikipedia.org/wiki/Key_exchange), which is a process that two parties use to securely agree on a secret encryption key that they can use to communicate with each other. To understand X3DH, I first needed to understand the basics of key exchange.
-
-### Public key cryptography
-
-At the heart of most of the cryptography in the Signal protocol is the concept of **public key cryptography**. In public key cryptography, each party generates both a public key and a private key, called a "key pair". They can safely share their public key with anybody while keeping their private key a secret. These key pairs have some valuable capabilities:
+At the heart of most of the cryptography in end-to-end encryption protocols is the concept of **public key cryptography**. In public key cryptography, each party generates both a public key and a private key, called a "key pair". They can safely share their public key with anybody while keeping their private key a secret. These key pairs have some valuable capabilities:
 
 - **Encryption**: If Alice wants to send a message to Bob, she can use Bob's public key to encrypt the message in a way that only Bob can decrypt.
 - **Decryption**: Bob can use his private key to decrypt any message that was encrypted with his public key.
@@ -36,11 +30,68 @@ At the heart of most of the cryptography in the Signal protocol is the concept o
 
 Key exchange is an important step in public key protocols, because simply encrypting each message with the other party's public key would make it trivial for an attacker who discovered a private key to decrypt all other messages that were encrypted with the same key. To avoid this problem, key exchange provides a way for two users use an insecure channel to agree on a temporary key that they will then use to encrypt the rest of their conversation.
 
-[Diffie-Hellman Key Exchange](https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange) is a method for using two parties' key pairs to securely agree on a _separate key_ that they can use to encrypt the rest of their conversation. A simple Diffie-Hellman exchange follows these steps: 
+[Diffie-Hellman Key Exchange](https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange) is a method for using two parties' key pairs to securely agree on a _separate key_ that they can use to encrypt the rest of their conversation. A simple Diffie-Hellman exchange follows these steps:
 
 1. Alice sends Bob her public key.
 1. Bob sends Alice his public key.
 1. Alice computes a new key: `var sharedKey = DH(alicePrivate, bobPublic)`
 1. Bob computes a new key: `var sharedKey = DH(bobPrivate, alicePublic)`
 
-After these steps, the `sharedKey` the Alice and Bob each computed is _identical_, and nobody know this key except the two of them. They can now use this key to communicate with each other securely.
+After these steps, the `sharedKey` the Alice and Bob each compute is _identical_, and nobody know this key except the two of them. They can now use this key to communicate with each other securely.
+
+### The math of Diffie-Hellman
+
+I'll demonstrate a very simple implementation of Diffie-Hellman key exchange using some small prime numbers and JavaScript for the math.
+
+1. Before Alice and Bob even begin their key exchange they agree on two base numbers for the algorithm, `g` and `p`. These numbers are probably widely known based on the protocol they're using. I'll say that `g = 2` and `p = 23`.
+1. Alice picks a random number between 1 and `p`: `a = 18`. This is her secret key.
+1. Alice computes `Pa = (g ** a) % p` (so, `13 == (2 ** 18) % 23`) and sends the result to Bob.
+1. Bob picks a random number between 1 and `p`: `b = 4`. This is his secret key.
+1. Bob computes `Pb = (g ** b) % p` (so, `16 == (2 ** 4) % 23`) and sends the result to Alice.
+
+   > Alice and Bob have now exchanged their public keys (13 and 16, respectively)
+
+1. Alice uses her private key and Bob's public key to compute the shared secret key: `Sa == ( Pb ** a ) % p` (so, `18 == ( 16 ** 18 ) % 23`)
+1. Bob uses his private key and Alice's public key to compute the shared secret key: `Sb == ( Pa ** b) % p` (so, `18 == (13 ** 4) % 23`)
+1. Alice and Bob have now computed a shared secret key that they both know, but that nobody else knows. In addition, nobody else knows the private keys they used to derive their shared secret!
+
+Here's the whole thing in one function (with a larger `p` value) if you want to run it a few times to see what happens:
+
+```javascript
+function dh() {
+  // Well-known elements `g` and `p`. `p` works best as a large prime
+  var g = BigInt(2);
+  var p = BigInt(1559);
+
+  // Alice computes her private key
+  var a = BigInt(parseInt(crypto.randomBytes(1).toString("hex"), 16) + 1); // A number between 1 and 256
+  // Alice computes her public key
+  var Pa = g ** BigInt(a) % p;
+
+  // Bob computes his private key
+  var b = BigInt(parseInt(crypto.randomBytes(1).toString("hex"), 16) + 1); // A number between 1 and 256
+  // Bob computes his public key
+  var Pb = g ** BigInt(b) % p;
+
+  // Alice computes the shared secret
+  var Sa = Pb ** a % p;
+
+  // Bob computes the shared secret
+  var Sb = Pa ** b % p;
+
+  if (Sa !== Sb) {
+    throw new Error('shared secret keys do not match')
+  }
+
+  return parseInt(Sa);
+}
+```
+
+#### Problems with primes
+
+The example above used [modular exponentiation](https://en.wikipedia.org/wiki/Modular_exponentiation) to derive each key. In doing so, the numbers we choose for `g` and `p` have a huge impact on how secure the key exchange can be. Generally, larger values of `p` are more secure, but not all values of `p` are created equal. The example above used `1559` (a [Sophie-Germain prime](https://oeis.org/A005384)) as `p`, so there about 779 possible secret keys that Alice and Bob could compute for each other.
+
+We might think that choosing a much larger prime like `65537` would be more secure, but if we did that there would only be **32** possible secret keys that Alice and Bob could compute! However, we could make another subtle change and use `g = 3` and `p = 65537`, and find that there are about **17668** possible secret keys that Alice and Bob could compute!
+
+In practice, secure real-world implementations use a `p` value upwards of 2048 bits long (compared to our 16 bit example), with carefully-chosen primes to avoid potential weaknesess.
+
