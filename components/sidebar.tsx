@@ -19,11 +19,11 @@ export function Sidebar() {
         </Link>
       </h2>
       <nav>
-        <Link href="/resume" className={classes.link}>
-          Resume
-        </Link>
         <Link href="/blog" className={classes.link}>
           Blog
+        </Link>
+        <Link href="/resume" className={classes.link}>
+          Resume
         </Link>
       </nav>
     </div>
