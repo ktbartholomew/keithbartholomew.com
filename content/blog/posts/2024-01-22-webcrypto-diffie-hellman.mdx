@@ -28,16 +28,15 @@ At the heart of most of the cryptography in end-to-end encryption protocols is t
 
 ### Diffie-Hellman Key Exchange
 
-Key exchange is an important step in public key protocols, because simply encrypting each message with the other party's public key would make it trivial for an attacker who discovered a private key to decrypt all other messages that were encrypted with the same key. To avoid this problem, key exchange provides a way for two users use an insecure channel to agree on a temporary key that they will then use to encrypt the rest of their conversation.
+Key exchange is an important step in public key protocols, because simply encrypting each message with the other party's public key would make it trivial for an attacker who discovered a private key to decrypt all other messages that were encrypted with the same key. To avoid this problem, key exchange provides a way for two users to use an insecure channel to agree on a temporary key that they will then use to encrypt the rest of their conversation.
 
 [Diffie-Hellman Key Exchange](https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange) is a method for using two parties' key pairs to securely agree on a _separate key_ that they can use to encrypt the rest of their conversation. A simple Diffie-Hellman exchange follows these steps:
 
 1. Alice sends Bob her public key.
 1. Bob sends Alice his public key.
-1. Alice computes a new key: `var sharedKey = DH(alicePrivate, bobPublic)`
-1. Bob computes a new key: `var sharedKey = DH(bobPrivate, alicePublic)`
-
-After these steps, the `sharedKey` that Alice and Bob each compute is _identical_, and nobody else knows this key except the two of them. They can now use this key to communicate with each other securely.
+1. Alice computes a shared key: `var sharedKey = DH(alicePrivate, bobPublic)`
+1. Bob computes the same shared key: `var sharedKey = DH(bobPrivate, alicePublic)`
+1. Alice and Bob both use `sharedKey` to encrypt and decrypt their message to each other.
 
 ### The math of Diffie-Hellman
 
@@ -45,9 +44,9 @@ I'll demonstrate a very simple implementation of Diffie-Hellman key exchange usi
 
 1. Before Alice and Bob even begin their key exchange they agree on two base numbers for the algorithm, `g` and `p`. These numbers are probably widely known based on the protocol they're using. I'll say that `g = 2` and `p = 23`.
 1. Alice picks a random number between 1 and `p`: `a = 18`. This is her secret key.
-1. Alice computes `Pa = (g ** a) % p` (so, `13 == (2 ** 18) % 23`) and sends the result to Bob.
+1. Alice computes `Pa = (g ** a) % p` (so, `13 == (2 ** 18) % 23`) and sends the result to Bob. This is her public key.
 1. Bob picks a random number between 1 and `p`: `b = 4`. This is his secret key.
-1. Bob computes `Pb = (g ** b) % p` (so, `16 == (2 ** 4) % 23`) and sends the result to Alice.
+1. Bob computes `Pb = (g ** b) % p` (so, `16 == (2 ** 4) % 23`) and sends the result to Alice. This is his public key.
 
    > Alice and Bob have now exchanged their public keys (13 and 16, respectively)
 
@@ -64,12 +63,12 @@ function dh() {
   var p = BigInt(1559);
 
   // Alice computes her private key
-  var a = BigInt(parseInt(crypto.randomBytes(1).toString("hex"), 16) + 1); // A number between 1 and 256
+  var a = BigInt(crypto.getRandomValues(new Uint8Array(1))[0] + 1); // A number between 1 and 256
   // Alice computes her public key
   var Pa = g ** BigInt(a) % p;
 
   // Bob computes his private key
-  var b = BigInt(parseInt(crypto.randomBytes(1).toString("hex"), 16) + 1); // A number between 1 and 256
+  var b = BigInt(crypto.getRandomValues(new Uint8Array(1))[0] + 1); // A number between 1 and 256
   // Bob computes his public key
   var Pb = g ** BigInt(b) % p;
 
