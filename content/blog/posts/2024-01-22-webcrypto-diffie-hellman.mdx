@@ -2,18 +2,18 @@
 title: End-to-end encryption using WebCrypto APIs and Diffie-Hellman Key Exchange
 date: 2024-01-22T23:45:00Z
 excerpt: |
-  TBD
+  Learn how to implement end-to-end encryption using the SubtleCrypto WebCrypto interface in web browsers, making Diffie-Hellman key exchange accessible for developers, addressing the challenges of key size, primes, and introducing Elliptic-curve Diffie-Hellman (ECDH). The post guides you through generating key pairs, exporting public keys, deriving shared keys, and encrypting messages, with insights into caveats like man-in-the-middle attacks, anonymity, browser security, and the synchronous nature of the process.
 ---
 
 _[Play with the demo](https://ktbartholomew.github.io/webcrypto-signal-protocol/) and view the source code [on GitHub](https://github.com/ktbartholomew/webcrypto-signal-protocol)_
 
-Whenver I build apps and services, I always dread handling users' sensitive data. Things like passwords or personal information need to be treated very carefully, because any accidental disclosure of that data is catastrophic to the users themselves, as well as their trust in the service. There's a lot of pressure in handling people's data safely! Regardless of how well a service handles sensitive data, users still have to put a lot of trust in how the service handles that data, both intentionally and unintentionally. The service might inspect or sell users' data, accidentally disclose it as part of a security incident, or be compelled to disclose it by a government entity.
+I always dread handling users' sensitive data. Things like passwords or personal information need to be treated very carefully, because any accidental disclosure of that data is catastrophic to the users themselves, as well as their trust in the service. There's a lot of pressure in handling people's data safely! Users have to put a lot of trust in how the service handles their data, both intentionally and unintentionally. The service might inspect or sell users' data, accidentally disclose it as part of a security incident, or be compelled to disclose it by a government entity.
 
 End-to-end encryption solves many of these problems by encrypting data before it leaves a user's device and not decrypting it until it reaches the desired destination. Services like [iMessage](https://support.apple.com/guide/security/imessage-security-overview-secd9764312f/1/web/1), [WhatsApp](https://faq.whatsapp.com/820124435853543/), and [Signal](https://signal.org/docs/) all use end-to-end encryption to ensure the privacy of their users' data.
 
 As a developer who lives in the world of web apps and web browsers, this kind of end-to-end encryption always seemed out of reach to me. But the introduction of the [SubtleCrypto](https://www.w3.org/TR/WebCryptoAPI/#subtlecrypto-interface) browser API has made a lot of the low-level cryptography needed for end-to-end encryption easily accessible in any modern web browser.
 
-I'm going to use the SubtleCrypto WebCrypto interface to do simple end-to-end encryption.
+I'm going to use the SubtleCrypto WebCrypto interface to do simple end-to-end encryption using Diffie-Hellman key exchange!
 
 ## Public key cryptography
 
@@ -37,7 +37,7 @@ Key exchange is an important step in public key protocols, because simply encryp
 1. Alice computes a new key: `var sharedKey = DH(alicePrivate, bobPublic)`
 1. Bob computes a new key: `var sharedKey = DH(bobPrivate, alicePublic)`
 
-After these steps, the `sharedKey` the Alice and Bob each compute is _identical_, and nobody know this key except the two of them. They can now use this key to communicate with each other securely.
+After these steps, the `sharedKey` that Alice and Bob each compute is _identical_, and nobody else knows this key except the two of them. They can now use this key to communicate with each other securely.
 
 ### The math of Diffie-Hellman
 
@@ -93,15 +93,15 @@ The example above used [modular exponentiation](https://en.wikipedia.org/wiki/Mo
 
 You might think that choosing a much larger prime like `65537` would be more secure, but if I did that there would only be **32** possible secret keys that Alice and Bob could compute! However, I could make another subtle change and use `g = 3` and `p = 65537`, and find that there are about **17668** possible secret keys that Alice and Bob could compute!
 
-In practice, secure real-world implementations use a `p` value upwards of 2048 bits long (compared to the 16 bit example), with carefully-chosen primes to avoid potential weaknesess.
+In practice, secure real-world implementations use a `p` value upwards of 2048 bits long (compared to my 16 bit example), with carefully-chosen primes to avoid potential weaknesess.
 
-This introduces another problem owning related to key size. When using a production-ready 2048 bit prime, the computed keys themselves are also 2048 bits in size and relatively slow to generate. Each party now has to transmit very large keys between one another just to establish a key exchange, which slows down applications using it.
+This introduces another problem related to key size. When using a production-ready 2048 bit prime, the computed keys themselves are also 2048 bits in size and relatively slow to generate. Each party now has to transmit very large keys between one another just to establish a key exchange, which slows down the application using it.
 
 ### Elliptic-curve Diffie-Hellman
 
 [Elliptic-curve](https://en.wikipedia.org/wiki/Elliptic-curve_Diffie%E2%80%93Hellman) Diffie Hellman (ECDH) is a variation of the prime-number-based Diffie-Hellman exchange that uses points on an [elliptic curve](https://en.wikipedia.org/wiki/Elliptic-curve_cryptography) to generate two key pairs and determine a shared secret.
 
-ECDH has the same mathematical advantage as exponential DH in that the only efficient way of guessing a private key is to brute-force guess every number in the key space, but in the case of ECDH the required key size for very strong securty is significantly smaller. Strong ECDH keys are only 256 bits long and just as secure as their much longer prime counterparts.
+ECDH has the same mathematical advantage as exponential DH in that the only efficient way of guessing a private key is to brute-force guess every number in the key space, but in the case of ECDH the required key size for very strong security is significantly smaller. Strong ECDH keys are only 256 bits long and just as secure as their much longer prime counterparts.
 
 ECDH has similar potential gotchas in choosing parameters—some curves are safer than others. The National Institute of Standards and Technology (NIST) [publishes a set of recommended curves](https://csrc.nist.gov/pubs/sp/800/186/final), but how much you trust those curves kind of depends on how much you trust any government to make cryptography recommendations. However, in the WebCrypto APIs, NIST curves like `P-256`, `P-384`, and `P-521` are the only ones natively available.
 
@@ -158,7 +158,7 @@ async function exportKey(format, key) {
 await exportKey("jwk", myPair.publicKey);
 ```
 
-That serializes my public key as a [JSON Web Key](https://datatracker.ietf.org/doc/html/rfc7517) and returns it to me so that I can send it somewhere. You can see that the JWK includes some interesting information about my public key, such as the elliptic curve being used and the X and Y coordinates of my public point on the curve:
+That serializes my public key as a [JSON Web Key](https://datatracker.ietf.org/doc/html/rfc7517) and returns it to me so that I can send it somewhere. You can see that the JWK includes some interesting information about my public key, such as the standard curve being used and the X and Y coordinates of my public point on the curve:
 
 ```json
 {
@@ -171,7 +171,7 @@ That serializes my public key as a [JSON Web Key](https://datatracker.ietf.org/d
 }
 ```
 
-You can also export the key in the `raw` format, but that format doesn't include as much information about the elliptic curve parameters being used, so I would need to establish a way to agree on those parameters separately. If I shared a key that was generated using the `P-521` curve and the other person tried to import that key using the `P-256` curve, their client would throw an error.
+You can also export the key in the `raw` format, but that format doesn't include as much information about the elliptic curve parameters being used, so I would need to establish a separate way to agree on those parameters. For example, if I shared a key that was generated using the `P-521` curve but the other person tried to import that key using the `P-256` curve, their client would throw an error.
 
 ### Derive a shared key
 
@@ -237,7 +237,7 @@ concatenated.set(new Uint8Array(ciphertext), iv.byteLength);
 console.log(btoa(concatenated));
 ```
 
-The resulting encrypted message, including its initialization vector, looks like this:
+The resulting encrypted message looks like this:
 
 <pre style={{ overflowX: "auto" }} className="language-text">
   <code className="language-text">
@@ -251,11 +251,11 @@ The resulting encrypted message, including its initialization vector, looks like
 
 The Diffie-Hellman key exchange allowed me and the other party to secretly agree on a key to send encrypted messages to each other, but it _didn't_ prove that either one of us was talking to the right person. I had no idea what the other person's public key was supposed to be before we started talking, and I have no way to verify it after we start talking.
 
-Doing Diffie-Hellman key exchange with two ephemeral key pairs as demonstrated here is vulnerable to a man-in-the-middle attack, where somebody could be intercepting our messages and decrypting them to see their contents.
+Doing Diffie-Hellman key exchange with two ephemeral key pairs as demonstrated here is vulnerable to a man-in-the-middle attack, where somebody could be intercepting our messages and decrypting them to see their contents. They could also re-encrypt and forward the messages so that neither party is aware that somebody in the middle is tampering with their messages.
 
 ### Anonymity
 
-Before I agree on a secret key with the other person, nothing between us is private. This means that any observer _knows_ that we're about to start a secret conversation with each other. This is kind of like yelling "Hey, do you want to know a secret??" in a crowded room and then conspicuously whispering the secret to that person. An observer could glean a lot from just the fact that those two people are talking about something secret, and that's the kind of metadata that is really valuable to attackers or surveillance states. Additional work is needed to establish a way for two parties to communicate both securely _and_ anonymously.
+Before I agree on a secret key with the other person, nothing between us is private. This means that any observer _knows_ that we're about to start a secret conversation with each other. This is kind of like yelling "Hey, do you want to know a secret??" in a crowded room and then conspicuously whispering the secret to that person. An observer could glean a lot from the fact that those two people are talking about something secret, and that's the kind of metadata that is really valuable to attackers and surveillance states. Additional work is needed to establish a way for two parties to communicate both securely _and_ anonymously.
 
 ### Browser security
 
@@ -263,7 +263,7 @@ The security of Diffie-Hellman key exchange depends on my ability to keep my pri
 
 ### Synchronous-only
 
-I didn't go into detail about how I would exchange keys with the other person, but the technique I demonstrated requires that we both be present at the time we exchange our keys. This rules out a lot of asynchronous communication styles like instant messaging or email.
+I didn't go into detail about how I would physically exchange keys with the other person, but the technique I demonstrated requires that we both be present at the time we exchange our keys. This rules out a lot of asynchronous communication styles like instant messaging or email.
 
 ## Next Steps
 
