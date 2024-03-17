@@ -1,14 +1,34 @@
 import { Sidebar } from "../components/sidebar";
 import "./globals.css";
 import "./prism.css";
+import { Metadata } from "next";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: {
     template: "%s - Keith Bartholomew",
     default: "Keith Bartholomew",
   },
   authors: [
     { name: "Keith Bartholomew", url: "https://keithbartholomew.com/" },
+  ],
+  icons: [
+    {
+      rel: "icon",
+      type: "image/png",
+      sizes: "16x16",
+      url: "/favicon-16x16.png",
+    },
+    {
+      rel: "icon",
+      type: "image/png",
+      sizes: "32x32",
+      url: "/favicon-32x32.png",
+    },
+    {
+      rel: "apple-touch-icon",
+      sizes: "180x180",
+      url: "/apple-touch-icon.png",
+    },
   ],
 };
 
@@ -26,7 +46,9 @@ export default function RootLayout({
               <Sidebar />
             </div>
           </div>
-          <div className="flex-auto p-4 md:p-8 md:w-3/4 max-w-[96ch]">{children}</div>
+          <div className="flex-auto p-4 md:p-8 md:w-3/4 max-w-[96ch]">
+            {children}
+          </div>
         </div>
       </body>
     </html>
