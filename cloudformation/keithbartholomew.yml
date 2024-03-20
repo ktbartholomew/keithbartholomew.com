@@ -1,0 +1,322 @@
+Parameters:
+  ArtifactsBucket:
+    Type: String
+    Default: keithbartholomew-com-artifacts
+  ArtifactsVersion:
+    Type: String
+  CloudFrontFunctionKey:
+    Type: String
+    Description: |
+      A secret string that CloudFront includes in requests to dynamic
+      functions. The functions can use the presence of this string to
+      confirm that the request originated from CloudFront, and reject
+      requests without it.
+
+Resources:
+  S3Bucket:
+    Type: "AWS::S3::Bucket"
+    DeletionPolicy: Retain
+    Properties:
+      PublicAccessBlockConfiguration:
+        RestrictPublicBuckets: true
+        IgnorePublicAcls: true
+        BlockPublicPolicy: true
+        BlockPublicAcls: true
+      BucketName: "keithbartholomew-com-static"
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: "BucketOwnerEnforced"
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - BucketKeyEnabled: false
+            ServerSideEncryptionByDefault:
+              SSEAlgorithm: "AES256"
+
+  S3BucketPolicy:
+    Type: "AWS::S3::BucketPolicy"
+    DeletionPolicy: Retain
+    Properties:
+      Bucket:
+        Ref: "S3Bucket"
+      PolicyDocument:
+        Version: "2008-10-17"
+        Statement:
+          - Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub "arn:aws:cloudfront::654654582724:distribution/${CloudFrontDistribution}"
+            Resource: !Sub "arn:aws:s3:::${S3Bucket}/*"
+            Action: "s3:GetObject"
+            Effect: "Allow"
+            Principal:
+              Service: "cloudfront.amazonaws.com"
+            Sid: "AllowCloudFrontServicePrincipal"
+        Id: "PolicyForCloudFrontPrivateContent"
+
+  FunctionsApi:
+    Type: AWS::ApiGatewayV2::Api
+    DeletionPolicy: Retain
+    Properties:
+      Name: functions-test
+      ProtocolType: HTTP
+      RouteSelectionExpression: "$request.method $request.path"
+
+  CloudFrontDistribution:
+    Type: "AWS::CloudFront::Distribution"
+    DeletionPolicy: Retain
+    Properties:
+      DistributionConfig:
+        Comment: "keithbartholomew.com"
+        DefaultRootObject: "/index.html"
+        Origins:
+          - ConnectionTimeout: 10
+            OriginAccessControlId:
+              Ref: "CloudFrontOriginAccessControl"
+            ConnectionAttempts: 3
+            OriginCustomHeaders: []
+            DomainName: !GetAtt S3Bucket.RegionalDomainName
+            OriginShield:
+              Enabled: false
+            S3OriginConfig:
+              OriginAccessIdentity: ""
+            OriginPath: !Sub "/${ArtifactsVersion}"
+            Id: !GetAtt S3Bucket.RegionalDomainName
+          - ConnectionTimeout: 10
+            ConnectionAttempts: 3
+            OriginCustomHeaders:
+              - HeaderName: "x-cloudfront-key"
+                HeaderValue: !Ref CloudFrontFunctionKey
+            DomainName: !Sub "${FunctionsApi}.execute-api.us-east-1.amazonaws.com"
+            OriginShield:
+              Enabled: false
+            OriginPath: ""
+            Id: !Sub "${FunctionsApi}.execute-api.us-east-1.amazonaws.com"
+            CustomOriginConfig:
+              OriginKeepaliveTimeout: 5
+              OriginReadTimeout: 30
+              OriginSSLProtocols:
+                - "TLSv1.2"
+              HTTPSPort: 443
+              HTTPPort: 80
+              OriginProtocolPolicy: "https-only"
+        ViewerCertificate:
+          MinimumProtocolVersion: "TLSv1.2_2021"
+          SslSupportMethod: "sni-only"
+          AcmCertificateArn: "arn:aws:acm:us-east-1:654654582724:certificate/7aca05fa-8b90-47f1-b9ff-5220ac739eee"
+        PriceClass: "PriceClass_All"
+        DefaultCacheBehavior:
+          Compress: true
+          LambdaFunctionAssociations:
+            - EventType: "viewer-request"
+              IncludeBody: false
+              LambdaFunctionARN:
+                Ref: "RewriterVersion"
+          TargetOriginId: !GetAtt S3Bucket.RegionalDomainName
+          ViewerProtocolPolicy: "redirect-to-https"
+          ResponseHeadersPolicyId: "eaab4381-ed33-4a86-88ca-d9558dc6cd63"
+          TrustedSigners: []
+          FieldLevelEncryptionId: ""
+          TrustedKeyGroups: []
+          AllowedMethods:
+            - "HEAD"
+            - "GET"
+            - "OPTIONS"
+          CachedMethods:
+            - "HEAD"
+            - "GET"
+          SmoothStreaming: false
+          OriginRequestPolicyId: "88a5eaf4-2fd4-4709-b370-b4c650ea3fcf"
+          CachePolicyId: "658327ea-f89d-4fab-a63d-7e88639e58f6"
+        Staging: false
+        CustomErrorResponses:
+          - ErrorCachingMinTTL: 10
+            ResponseCode: 404
+            ErrorCode: 403
+            ResponsePagePath: "/404/index.html"
+        ContinuousDeploymentPolicyId: ""
+        OriginGroups:
+          Quantity: 0
+          Items: []
+        Enabled: true
+        Aliases:
+          - "keithbartholomew.com"
+          - "www.keithbartholomew.com"
+        IPV6Enabled: true
+        WebACLId: ""
+        HttpVersion: "http2and3"
+        Restrictions:
+          GeoRestriction:
+            Locations: []
+            RestrictionType: "none"
+        CacheBehaviors:
+          - Compress: true
+            TargetOriginId: !Sub "${FunctionsApi}.execute-api.us-east-1.amazonaws.com"
+            ViewerProtocolPolicy: "redirect-to-https"
+            AllowedMethods:
+              - "HEAD"
+              - "DELETE"
+              - "POST"
+              - "GET"
+              - "OPTIONS"
+              - "PUT"
+              - "PATCH"
+            PathPattern: "/functions/*"
+            CachedMethods:
+              - "HEAD"
+              - "GET"
+              - "OPTIONS"
+            OriginRequestPolicyId: "b689b0a8-53d0-40ab-baf2-68738e2966ac"
+            CachePolicyId: "4135ea2d-6df8-44a3-9df3-4b5a84be39ad"
+
+  CloudFrontOriginAccessControl:
+    Type: "AWS::CloudFront::OriginAccessControl"
+    DeletionPolicy: Retain
+    Properties:
+      OriginAccessControlConfig:
+        SigningBehavior: "always"
+        Description: ""
+        SigningProtocol: "sigv4"
+        OriginAccessControlOriginType: "s3"
+        Name: !GetAtt S3Bucket.RegionalDomainName
+
+  RewriterLambda:
+    Type: "AWS::Lambda::Function"
+    DeletionPolicy: Retain
+    Properties:
+      MemorySize: 128
+      Description: ""
+      TracingConfig:
+        Mode: "PassThrough"
+      Timeout: 3
+      RuntimeManagementConfig:
+        UpdateRuntimeOn: "Auto"
+      Handler: "index.handler"
+      Code:
+        S3Bucket: !Ref ArtifactsBucket
+        S3Key: !Sub "${ArtifactsVersion}/rewrite.zip"
+      Role: !GetAtt RewriterRole.Arn
+      FileSystemConfigs: []
+      FunctionName: "keithbartholomew-com-rewrite"
+      Runtime: "nodejs20.x"
+      PackageType: "Zip"
+      LoggingConfig:
+        LogFormat: "Text"
+        LogGroup: !Ref RewriterLogGroup
+      EphemeralStorage:
+        Size: 512
+      Architectures:
+        - "x86_64"
+
+  RewriterRole:
+    Type: "AWS::IAM::Role"
+    DeletionPolicy: Retain
+    Properties:
+      Path: "/service-role/"
+      ManagedPolicyArns:
+        - "arn:aws:iam::654654582724:policy/service-role/AWSLambdaBasicExecutionRole-bdedc380-24de-488b-a9d5-e01dddcc790f"
+      MaxSessionDuration: 3600
+      RoleName: "keithbartholomew-com-rewrite-role-mu62bg2n"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action: "sts:AssumeRole"
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "edgelambda.amazonaws.com"
+                - "lambda.amazonaws.com"
+
+  RewriterPermission:
+    Type: "AWS::Lambda::Permission"
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName:
+        Ref: "RewriterVersion"
+      Action: "lambda:GetFunction"
+      Principal: "replicator.lambda.amazonaws.com"
+
+  RewriterVersion:
+    Type: "AWS::Lambda::Version"
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName:
+        Ref: "RewriterLambda"
+      RuntimePolicy:
+        UpdateRuntimeOn: "Auto"
+      CodeSha256: "0aY8Yt4TOOmLScJo75G1uFANdpQagpzBebtx0Kb/GXI="
+
+  RewriterLogGroup:
+    Type: "AWS::Logs::LogGroup"
+    DeletionPolicy: Retain
+    Properties:
+      LogGroupClass: "STANDARD"
+      RetentionInDays: 7
+      LogGroupName: "/aws/lambda/keithbartholomew-com-rewrite"
+      DataProtectionPolicy: {}
+
+  OriginTestLambda:
+    Type: "AWS::Lambda::Function"
+    DeletionPolicy: Retain
+    Properties:
+      MemorySize: 128
+      Description: ""
+      TracingConfig:
+        Mode: "PassThrough"
+      Timeout: 30
+      RuntimeManagementConfig:
+        UpdateRuntimeOn: "Auto"
+      Handler: "index.handler"
+      Code:
+        S3Bucket: !Ref ArtifactsBucket
+        S3Key: !Sub "${ArtifactsVersion}/cloudfront-origin-test.zip"
+      Role: !GetAtt OriginTestRole.Arn
+      FileSystemConfigs: []
+      FunctionName: "cloudfront-origin-test"
+      Runtime: "nodejs20.x"
+      PackageType: "Zip"
+      LoggingConfig:
+        LogFormat: "Text"
+        LogGroup: !Ref OriginTestLogGroup
+      Environment:
+        Variables:
+          CLOUDFRONT_KEY: !Ref CloudFrontFunctionKey
+      EphemeralStorage:
+        Size: 512
+      Architectures:
+        - "arm64"
+
+  OriginTestPermission:
+    Type: "AWS::Lambda::Permission"
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: !Ref OriginTestLambda
+      Action: "lambda:InvokeFunction"
+      SourceArn: !Sub "arn:aws:execute-api:us-east-1:654654582724:${FunctionsApi}/*/*/functions/cloudfront-origin-test"
+      Principal: "apigateway.amazonaws.com"
+
+  OriginTestRole:
+    Type: "AWS::IAM::Role"
+    DeletionPolicy: Retain
+    Properties:
+      Path: "/service-role/"
+      ManagedPolicyArns:
+        - "arn:aws:iam::654654582724:policy/service-role/AWSLambdaBasicExecutionRole-396246cd-3092-4852-9152-6f12662f22cf"
+      MaxSessionDuration: 3600
+      RoleName: "cloudfront-origin-test-role-pwzqe4ox"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action: "sts:AssumeRole"
+            Effect: "Allow"
+            Principal:
+              Service: "lambda.amazonaws.com"
+
+  OriginTestLogGroup:
+    Type: "AWS::Logs::LogGroup"
+    DeletionPolicy: Retain
+    Properties:
+      LogGroupClass: "STANDARD"
+      RetentionInDays: 7
+      LogGroupName: "/aws/lambda/cloudfront-origin-test"
+      DataProtectionPolicy: {}
+
+
