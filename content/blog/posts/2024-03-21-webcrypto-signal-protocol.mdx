@@ -1,0 +1,87 @@
+---
+title: Implementing the Signal X3DH protocol with WebCrypto
+date: 2024-03-21T23:45:00Z
+excerpt: |
+  TBD
+---
+
+_[Play with the demo](https://ktbartholomew.github.io/webcrypto-signal-protocol/) and view the source code [on GitHub](https://github.com/ktbartholomew/webcrypto-signal-protocol)_
+
+In a [previous post](/blog/posts/2024-01-22-webcrypto-diffie-hellman/), I explored the low-level cryptography behind [Diffie-Hellman Key Exchange](https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange), a method that allows two parties to secretly agree on an encryption key for their communications. 
+
+Diffie-Hellman is delightfully clever, but it has a few limitations if used by itself:
+
+- **It's prone to man-in-the-middle attacks.** When Alice and Bob are transmitting their public keys to one another, a third party could be intercepting both of their keys. This attacker could complete the key exchange with both Alice and Bob and then be able to read whatever they encrypt with their shared key. The attacker would probably proxy messages between Alice and Bob so that neither of them is aware of their man-in-the-middle.
+- **It doesn't authenticate either party.** Authentication is a very important part of cryptography. In addition to encrypting messages, you need to be able to prove that you're talking to the right person! Because Alice and Bob both compute their Diffie-Hellman keys ephemerally, there's no way for them to trust that the other person's key was actually made by the right person.
+- **It doesn't work asynchronously.** Exchanging keys is easy when both parties are on-line; each one only has to store their private keys for a few moments while the key exchange happens. But in contexts like messaging and email, somebody is very likely to send you a message when you're not around. How can they encrypt their initial message to you, even when you're asleep, or your phone is off?
+- **It's only for key exchange, not generic encryption.** Symmetric encryption algorithms like AES have tools for checking the integrity of their contents, and are generally more efficient at encrypting lots of content, like images and video.
+
+These limitations don't mean that Diffie-Hellman is completely bad; it just needs a little help!
+
+## X3DH: More of a good thing
+
+In 2016, [Signal](https://www.signal.org/docs/specifications/x3dh/) published the spec for Extended Triple Diffie-Hellman (X3DH). X3DH builds on top of plain Diffie-Hellman to create a key exchange protocol that also provides mutual authentication, [forward secrecy](https://en.wikipedia.org/wiki/Forward_secrecy), and [deniability](https://en.wikipedia.org/wiki/Deniable_encryption). X3DH also works well asynchronously, as in an instant messaging setting.
+
+### Before the key exchange: publishing prekeys
+
+X3DH begins by having every user generate a "prekey bundle". This bundle contains several keys with a variety of characteristics:
+
+<table>
+  <thead>
+    <tr>
+      <th>Key</th>
+      <th>Purpose</th>
+      <th>Usage</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Identity Key</td>
+      <td>Uniquely identifies the user who generated the key.</td>
+      <td>Generated once, reused frequently, never changes.</td>
+    </tr>
+    <tr>
+      <td>Signed Prekey</td>
+      <td>Provides material that the owner can sign to prove that they own the keys.</td>
+      <td>Generated periodically, reused frequently.</td>
+    </tr>
+    <tr>
+      <td>One-time Prekeys</td>
+      <td>Provides key material to begin X3DH sessions with forward secrecy.</td>
+      <td>Generated frequently, never reused.</td>
+    </tr>
+  </tbody>
+</table>
+
+When every user joins Signal, they generate a prekey bundle and upload the _public_ portions of each key to Signal's servers. They keep the _private_ portions on their device.
+
+### Preparing to send a new message
+
+When you want to send a message to somebody on Signal, you look them up by their username ([or before February 2024, their phone number](https://signal.org/blog/phone-number-privacy-usernames/)). When you do this, Signal's servers send you the user's public identity key, their current signed prekey, their computed signature of the signed prekey, and one of their one-time prekeys. Signal then deletes that one-time prekey and will never use it again.
+
+> Sometimes a user can run out of one-time prekeys. When this happens, you can still do an X3DH exchange, just without the one-time prekey.
+
+You're now in possession of three (maybe two) of your recipient's public keys. Before moving on, you must verify that the user's signed prekey was in fact signed by the user's identity key. This proves that the same person generated both keys. If the signature _isn't_ valid, run away!
+
+### Generating the initial symmetric key
+
+![Signal's diagram of the X3DH process](/x3dh.png)
+
+1. Generate an ephemeral key (EK<sub>A</sub>). Similar to your recipient's one-time prekey, this key is only ever used once and helps ensure forward secrecy.
+1. Calculate a Diffie-Hellman key using your identity key (IK<sub>A</sub>) and your recipient's signed prekey (SPK<sub>B</sub>). This helps your recipient authenticate you, because they can look up your identity key from Signal's servers.
+1. Calculate a Diffie-Hellman key using your ephemeral key (EK<sub>A</sub>) and your recipient's identity key (IK<sub>B</sub>). This helps you authenticate your recipient, because you retrieved their identity key and validated it with the signed prekey.
+1. Calculate a Diffie-Hellman key using your ephemeral key (EK<sub>A</sub>) and your recipient's signed prekey (SPK<sub>B</sub>).
+1. Calculate a Diffie-Hellman key using your ephemeral key (EK<sub>A</sub>) and your recipient's one-time prekey (OPK<sub>B</sub>).
+
+You now have four separate Diffie-Hellman keys, but you're going to combine them all using [HKDF](https://en.wikipedia.org/wiki/HKDF) to create **one** symmetric key (SK).
+
+### Sending the initial message
+
+Use the symmetric key you generated to encrypt your first message. Then, send a message to your recipient indicating which keys you used to generate a symmetric encryption key. This bundle includes:
+
+- Your identity key (IK<sub>A</sub>).
+- Your ephemeral key (EK<sub>A</sub>).
+- The recipient's one-time prekey (OPK<sub>B</sub>), or some identifier letting them know which one you used.
+- Your initial, encrypted message.
+
+Remember, your recipient might be offline for quite a long time, but Signal's servers can safely hold onto this bundle until the recipient returns, because all of its contents are either publicly-known or encrypted.
