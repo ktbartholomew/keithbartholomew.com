@@ -66,7 +66,7 @@ Resources:
     Properties:
       DistributionConfig:
         Comment: "keithbartholomew.com"
-        DefaultRootObject: "/index.html"
+        DefaultRootObject: "index.html"
         Origins:
           - ConnectionTimeout: 10
             OriginAccessControlId:
@@ -106,10 +106,10 @@ Resources:
         DefaultCacheBehavior:
           Compress: true
           LambdaFunctionAssociations:
-            - EventType: "viewer-request"
+            - EventType: "origin-request"
               IncludeBody: false
               LambdaFunctionARN:
-                Ref: "RewriterVersion"
+                Ref: "RewriterVersion528be8c3"
           TargetOriginId: !GetAtt S3Bucket.RegionalDomainName
           ViewerProtocolPolicy: "redirect-to-https"
           ResponseHeadersPolicyId: "eaab4381-ed33-4a86-88ca-d9558dc6cd63"
@@ -230,11 +230,11 @@ Resources:
     DeletionPolicy: Retain
     Properties:
       FunctionName:
-        Ref: "RewriterVersion"
+        Ref: "RewriterLambda"
       Action: "lambda:GetFunction"
       Principal: "replicator.lambda.amazonaws.com"
 
-  RewriterVersion:
+  RewriterVersion528be8c3:
     Type: "AWS::Lambda::Version"
     DeletionPolicy: Retain
     Properties:
@@ -242,7 +242,7 @@ Resources:
         Ref: "RewriterLambda"
       RuntimePolicy:
         UpdateRuntimeOn: "Auto"
-      CodeSha256: "0aY8Yt4TOOmLScJo75G1uFANdpQagpzBebtx0Kb/GXI="
+      CodeSha256: "NDHTK63o/hOKyO0JS3f9iUKRZbMZA8lAs4xflSbRFcE="
 
   RewriterLogGroup:
     Type: "AWS::Logs::LogGroup"

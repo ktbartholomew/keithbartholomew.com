@@ -1,17 +1,16 @@
-import { CloudFrontRequestEvent } from "aws-lambda";
+import { CloudFrontRequestEvent, CloudFrontRequestHandler } from "aws-lambda";
 
-export const handler = async (event: CloudFrontRequestEvent) => {
-  const request = event.Records[0].cf.request;
-  const uri = request.uri;
-
-  console.log(`handling request ${JSON.stringify(request)}`);
+export const handler: CloudFrontRequestHandler = async (event: CloudFrontRequestEvent) => {
+  const e = event.Records[0];
+  console.log(`handling request ${JSON.stringify(e)}`);
+  const request = e.cf.request;
 
   // Check whether the URI is missing a file name.
-  if (uri.endsWith("/") || uri === "") {
-    request.uri += "index.html";
+  if (request.uri.endsWith("/") || request.uri === "") {
+    request.uri = request.uri.replace(/\/?$/, '/index.html');
   }
   // Check whether the URI is missing a file extension.
-  else if (!uri.includes(".")) {
+  else if (!request.uri.includes(".")) {
     request.uri += "/index.html";
   }
 
