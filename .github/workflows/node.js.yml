@@ -25,4 +25,9 @@ jobs:
       with:
         aws-region: us-east-1
         role-to-assume: arn:aws:iam::654654582724:role/GitHubDeploy
-    - run: aws sts get-caller-identity
+
+    - name: Upload functions and files
+      run: npm run publish
+
+    - name: Deploy CloudFormation
+      run: aws cloudformation deploy  --stack-name keithbartholomew-com-site --template-file ./cloudformation/keithbartholomew.yml --capabilities CAPABILITY_NAMED_IAM --parameter-overrides ArtifactsVersion=$(git rev-parse HEAD) 
