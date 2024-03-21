@@ -16,3 +16,9 @@ jobs:
         cache: 'npm'
     - run: npm ci
     - run: npm run build
+    - name: "Configure AWS Credentials" Action for GitHub Actions
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-region: us-east-1
+        role-to-assume: arn:aws:iam::654654582724:role/GitHubDeploy
+    - run: aws sts get-caller-identity
