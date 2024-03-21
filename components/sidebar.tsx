@@ -25,6 +25,9 @@ export function Sidebar() {
         <Link href="/resume" className={classes.link}>
           Resume
         </Link>
+        <Link target="_blank" rel="noopener noreferrer" href="https://github.com/ktbartholomew/keithbartholomew.com" className={classes.link}>
+          GitHub
+        </Link>
       </nav>
     </div>
   );
