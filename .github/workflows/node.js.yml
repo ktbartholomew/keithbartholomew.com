@@ -16,7 +16,7 @@ jobs:
         cache: 'npm'
     - run: npm ci
     - run: npm run build
-    - name: "Configure AWS Credentials" Action for GitHub Actions
+    - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-region: us-east-1
