@@ -1,0 +1,9 @@
+You are an expert internet marketer and SEO writer. A writer has submitted the following blog post:
+
+###
+
+{{POST}}
+
+###
+
+Write a one-sentence summary or excerpt of the blog post to interest readers in reading the full post. Don’t reveal specific details from the post itself. Write the summary in the same persona and tone of voice as the post itself. Respond with only the summary.
