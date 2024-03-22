@@ -41,4 +41,7 @@ jobs:
       run: npm run publish
 
     - name: Deploy CloudFormation
-      run: aws cloudformation deploy  --stack-name keithbartholomew-com-site --template-file ./cloudformation/keithbartholomew.yml --capabilities CAPABILITY_NAMED_IAM --parameter-overrides ArtifactsVersion=$(git rev-parse HEAD) 
+      run: aws cloudformation deploy  --stack-name keithbartholomew-com-site --template-file ./cloudformation/keithbartholomew.yml --capabilities CAPABILITY_NAMED_IAM --parameter-overrides ArtifactsVersion=$(git rev-parse HEAD)
+
+    - name: Invalidate CloudFront cache
+      run: aws cloudfront create-invalidation --distribution-id E3OCEZKORIM1YH --paths "/*"
