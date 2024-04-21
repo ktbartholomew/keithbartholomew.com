@@ -1,0 +1,462 @@
+---
+title: "Building a Toy DNS Server"
+date: 2024-04-21T21:17:00Z
+excerpt: |
+  Dive into the world of DNS servers as we explore the intricacies of building one from scratch in Go, delving into the protocol's structure, parsing queries, and crafting responses, all while uncovering the challenges and complexities of the DNS landscape.
+---
+
+_View the source code [on GitHub](https://github.com/ktbartholomew/go-dns-server)_
+
+DNS is one of the foundational parts of networking that I usually take for granted. Just point a domain at an IP address, then don't think about it for a few years! But in my work projects, I've started using more dynamic DNS tools like [Amazon Route 53](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/Welcome.html) that add a complex system of health checks and latency-based routing to how DNS queries are resolved, opening my eyes to the idea that a lot of business logic could go into a DNS server. Around the same time, I also listened to [“It’s not always DNS” on the Changelog podcast](https://changelog.com/podcast/581) which really got me thinking that it might be fun to make a DNS server myself, just to understand how these things work.
+
+There is nothing new under the sun, and that includes people making DNS servers. I wanted to use [Go](https://go.dev/) for this project, partly to brush up on that language but also because I really like using Go to work on low-level networking stuff. There are already very mature DNS implmentations in Go, like the [miekg/dns](https://github.com/miekg/dns) library, which is what [CoreDNS](https://coredns.io/) is built on. Lots of very smart people are already building DNS servers in Go.
+
+I intentionally avoided referencing these projects while doing this experiment; I want to do everything from scratch and make lots of mistakes!
+
+## Making a UDP Server
+
+DNS traditionally works over [UDP](#source), so I need to create a server that sends and receives UDP messages. I've never done this before, so even this first step is new territory! Luckily, making a UDP server in Go isn't much different from making a TCP-based HTTP server:
+
+```go
+conn, err := net.ListenUDP("udp", &net.UDPAddr{Port: 5553})
+
+for {
+        // standard DNS messages are 512 bytes max
+		msg := make([]byte, 512)
+
+        // `n` is the number of bytes read.
+        // `addr` is an address we can use to send a response back to the
+        // caller. This is different from TCP which has request/response built
+        // in to the protocol itself.
+		n, addr, err := conn.ReadFromUDP(msg[0:])
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+
+        // Trim unused bytes from the message
+        msg = msg[0:n]
+        // Just print the raw message
+        fmt.Printf("%+v\n", msg)
+}
+```
+
+Go sees the `msg` as a byte slice which isn't very interesting to read, but here's an example query formatted like a hex dump:
+
+```text
+0000000: f6 f5 01 20 00 01 00 00 00 00 00 01 05 68 65 6c  ... .........hel
+0000010: 6c 6f 07 65 78 61 6d 70 6c 65 03 63 6f 6d 00 00  lo.example.com..
+0000020: 01 00 01 00 00 29 10 00 00 00 00 00 00 00          .....)........
+```
+
+You can see `hello.example.com` plainly in the request, but what are all the other bytes around it? Let's find out!
+
+## Reading a DNS Query
+
+The DNS protocol is well-described in [RFC 1035: “Domain names - implementation and specification”](https://www.rfc-editor.org/rfc/rfc1035.html), and that was my main reference for this work.
+
+DNS messages are split into four main sections:
+
+- The header
+- The question
+- The answer (optional)
+- Authority info (optional)
+- Additional info (optional)
+
+### The header
+
+The header is kind of a map for the rest of the message; It includes information about which of the optional sections are present. So, parsing the header is the first step towards being able to parse the rest of the message. The header has a predictable size and structure, and occupies the first 12 bytes of the message:
+
+<table>
+  <thead>
+    <tr>
+      <th>00</th>
+      <th>01</th>
+      <th>02</th>
+      <th>03</th>
+      <th>04</th>
+      <th>05</th>
+      <th>06</th>
+      <th>07</th>
+      <th>08</th>
+      <th>09</th>
+      <th>0a</th>
+      <th>0b</th>
+      <th>0c</th>
+      <th>0d</th>
+      <th>0e</th>
+      <th>0f</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td colspan="16">16-bit ID number</td>
+    </tr>
+    <tr>
+      <td>QR</td>
+      <td colspan="4">Opcode</td>
+      <td>AA</td>
+      <td>TC</td>
+      <td>RD</td>
+      <td>TA</td>
+      <td colspan="3">Unused</td>
+      <td colspan="4">RCODE</td>
+    </tr>
+    <tr>
+      <td colspan="16">Question count</td>
+    </tr>
+    <tr>
+      <td colspan="16">Answer count</td>
+    </tr>
+    <tr>
+      <td colspan="16">Authority count</td>
+    </tr>
+    <tr>
+      <td colspan="16">Additional count</td>
+    </tr>
+  </tbody>
+</table>
+
+The ID number is just a random number and the record counts are also just numbers, so those parts of the header are pretty easy to parse:
+
+```go
+type Message struct {
+	raw             []byte
+	ID              uint16
+	IsQuery         bool
+	IsResponse      bool
+	OpCode          string
+	QuestionCount   uint16
+	AnswerCount     uint16
+	ServerCount     uint16
+	AdditionalCount uint16
+	Questions       []DnsQuestion
+	Answers         []ResourceRecord
+	NameServers     []ResourceRecord
+	Extra           []ResourceRecord
+}
+
+m := &Message{raw: msg}
+m.ID = binary.BigEndian.Uint16(m.raw[0:2])
+m.QuestionCount = binary.BigEndian.Uint16(m.raw[4:6])
+m.AnswerCount = binary.BigEndian.Uint16(m.raw[6:8])
+m.ServerCount = binary.BigEndian.Uint16(m.raw[8:10])
+m.AdditionalCount = binary.BigEndian.Uint16(m.raw[10:12])
+```
+
+The 3rd and 4th bytes of the header have a lot of information packed into them, and we'll need to read them bit-by-bit (literally, binary bits) to pull out all the information:
+
+- `QR` is a boolean that indicates if this messages is a query (0) or a response (1).
+- `Opcode` is a 4-bit field that indicates what kind of query the message contains.
+  - `0` is a regular query.
+  - `1` is an inverse query.
+  - `2` is a server status request.
+- `AA` is a boolean that indicates whether this server is the authority for the domain name in the question.
+- `TC` is a boolean that indicates the message was truncated because it was longer than 512 bytes.
+- `RD` is a boolean that indicates the client wants to do a recursive query.
+- `RA` is a boolean that indicates whether the server agreed to do a recursive query.
+- `RCODE` is a 4-bit field that indicates the response status. It's used kind of like the status code in HTTP.
+
+Extracting this information requires reading individual bits. For simplicity, I only bothered reading the `QR` and `Opcode` bits, and didn't go about it very elegantly:
+
+```go
+header := binary.BigEndian.Uint16(m.raw[2:4])
+m.IsQuery = header&0b1000000000000000 == 0b0000000000000000
+m.IsResponse = !m.IsQuery
+
+m.OpCode = "QUERY"
+if header&0b0000100000000000 == 0b0000100000000000 {
+    m.OpCode = "IQUERY"
+}
+
+if header&0b0001000000000000 == 0b0001000000000000 {
+    m.OpCode = "STATUS"
+}
+```
+
+We've now parsed enough of the header to guide us through parsing the rest of the query.
+
+### The question
+
+The DNS query's header included the number of questions in the query. Similar to the header, each question has a predictable format:
+
+<table>
+  <thead>
+    <tr>
+      <th>00</th>
+      <th>01</th>
+      <th>02</th>
+      <th>03</th>
+      <th>04</th>
+      <th>05</th>
+      <th>06</th>
+      <th>07</th>
+      <th>08</th>
+      <th>09</th>
+      <th>0a</th>
+      <th>0b</th>
+      <th>0c</th>
+      <th>0d</th>
+      <th>0e</th>
+      <th>0f</th>
+      <th>...more</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td colspan="17">
+        <span>Query name</span>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="16">Query type</td>
+    </tr>
+    <tr>
+      <td colspan="16">Query class</td>
+    </tr>
+  </tbody>
+</table>
+
+The query name is the actual DNS name being queried, like `hello.example.com.`. The length of this name can vary quite a bit, so the name is split into a series of labels. Each section of the domain name between `.` characters is a label. In each label, the first byte indicates how long the label is, and is followed by that many bytes of text. This continues until a zero-length label is found:
+
+<table>
+  <tbody>
+    <tr>
+      <td class="bg-sky-700">5</td>
+      <td>h</td>
+      <td>e</td>
+      <td>l</td>
+      <td>l</td>
+      <td>o</td>
+      <td class="bg-sky-700">7</td>
+      <td>e</td>
+      <td>x</td>
+      <td>a</td>
+      <td>m</td>
+      <td>p</td>
+      <td>l</td>
+      <td>e</td>
+      <td class="bg-sky-700">3</td>
+      <td>c</td>
+    </tr>
+    <tr>
+      <td>o</td>
+      <td>m</td>
+      <td class="bg-sky-700">0</td>
+    </tr>
+  </tbody>
+</table>
+
+The query type is a 16-bit number that corresponds to DNS record types you might be familiar with like `A`, `CNAME`, `MX`, `TXT`, etc.
+
+The query class a 16-bit number that corresponds to the class of record, like `IN` for "Internet" or `CH` for "Chaos". It's almost always `IN`.
+
+## Sending a DNS Response
+
+The query I received included questions, but no answers. This is where I would do some interesting business logic to figure out some dynamic response to the DNS query and return an answer. For this experiment, I'm just reading some information from a text file.
+
+When I respond to the DNS query, I actually modify the incoming message and append the answer information, then return the modified message back to the requester.
+
+For each answer, I append an answer data to the message and increment the answer count number in the message's header. The format for the answers themselves varies depending on the query type.
+
+### General answer format
+
+Each answer follows a similar format, although the lengths of the record name and its value are variable and depend on the type of record being described:
+
+<table>
+  <thead>
+    <tr>
+      <th>00</th>
+      <th>01</th>
+      <th>02</th>
+      <th>03</th>
+      <th>04</th>
+      <th>05</th>
+      <th>06</th>
+      <th>07</th>
+      <th>08</th>
+      <th>09</th>
+      <th>0a</th>
+      <th>0b</th>
+      <th>0c</th>
+      <th>0d</th>
+      <th>0e</th>
+      <th>0f</th>
+      <th>...more</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td colspan="17">
+        <span>Record name</span>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="16">Record type</td>
+    </tr>
+    <tr>
+      <td colspan="16">Record class</td>
+    </tr>
+    <tr>
+      <td colspan="16">Record TTL (bytes 1-16)</td>
+    </tr>
+    <tr>
+      <td colspan="16">Record TTL (bytes 17-32)</td>
+    </tr>
+    <tr>
+      <td colspan="16">Record data length</td>
+    </tr>
+    <tr>
+      <td colspan="17">Record data</td>
+    </tr>
+  </tbody>
+</table>
+
+```go
+type ResourceRecord struct {
+	Name  string
+	Type  uint16
+	Class uint16
+	TTL   uint32
+	Data  []byte
+}
+
+func (r *ResourceRecord) Serialize() []byte {
+	serialized := []byte{}
+	serialized = append(serialized, serializeLabels(strings.Split(r.Name, "."))...)
+	serialized = binary.BigEndian.AppendUint16(serialized, r.Type)
+	serialized = binary.BigEndian.AppendUint16(serialized, r.Class)
+	serialized = binary.BigEndian.AppendUint32(serialized, r.TTL)
+	serialized = binary.BigEndian.AppendUint16(serialized, uint16(len(r.Data)))
+	serialized = append(serialized, r.Data...)
+	return serialized
+}
+```
+
+### Serializing an `A` answer
+
+An `A` record returns an IPv4 address. Although we normally read IPv4 addresses as four decimal numbers like `192.168.1.200`, each address is actually just a single 32-bit number. You could also think of it as four 8-bit numbers:
+
+<table>
+  <thead>
+    <tr>
+      <th>00</th>
+      <th>01</th>
+      <th>02</th>
+      <th>03</th>
+      <th>04</th>
+      <th>05</th>
+      <th>06</th>
+      <th>07</th>
+      <th>08</th>
+      <th>09</th>
+      <th>0a</th>
+      <th>0b</th>
+      <th>0c</th>
+      <th>0d</th>
+      <th>0e</th>
+      <th>0f</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td colspan="8">0-255</td>
+      <td colspan="8">0-255</td>
+    </tr>
+    <tr>
+      <td colspan="8">0-255</td>
+      <td colspan="8">0-255</td>
+    </tr>
+  </tbody>
+</table>
+
+In my Go server, I needed to read an IP address as a string from a text file and serialize it according to the DNS spec, so I found it helpful to parse it as a series of four 8-bit numbers:
+
+```go
+type AData struct {
+	IPAddr string
+}
+
+func (d AData) Serialize() ([]byte, error) {
+	octets := strings.Split(d.IPAddr, ".")
+	out := []byte{}
+
+	for _, o := range octets {
+		b, err := strconv.Atoi(o)
+		if err != nil {
+			return nil, err
+		}
+
+		out = append(out, uint8(b))
+	}
+
+	return out, nil
+}
+```
+
+### Serializing a `CNAME` answer
+
+A `CNAME` returns an alias to another domain name, so its format is exactly the same as the series of labels the user sent when making their query. This means the length of a `CNAME` answer depends on how long the domain name is. A `CNAME` answer might look like this:
+
+<table>
+  <tbody>
+    <tr>
+      <td class="bg-sky-700">9</td>
+      <td>c</td>
+      <td>a</td>
+      <td>n</td>
+      <td>o</td>
+      <td>n</td>
+      <td>i</td>
+      <td>c</td>
+      <td>a</td>
+      <td>l</td>
+      <td class="bg-sky-700">7</td>
+      <td>e</td>
+      <td>x</td>
+      <td>a</td>
+      <td>m</td>
+      <td>p</td>
+    </tr>
+    <tr>
+      <td>l</td>
+      <td>e</td>
+      <td class="bg-sky-700">3</td>
+      <td>c</td>
+      <td>o</td>
+      <td>m</td>
+      <td class="bg-sky-700">0</td>
+    </tr>
+  </tbody>
+</table>
+
+In my Go server, I stored the domain name as a string and wrote a serialization function to split the string into a series of labels and serialize it as described above:
+
+```go
+type CNAMEData struct {
+	Name string
+}
+
+func (d CNAMEData) Serialize() ([]byte, error) {
+	return serializeLabels(strings.Split(d.Name, ".")), nil
+}
+
+func serializeLabels(labels []string) []byte {
+	raw := []byte{}
+
+	for _, l := range labels {
+		raw = append(
+			raw, append([]byte{uint8(len(l))}, []byte(l)...)...,
+		)
+	}
+
+	return raw
+}
+```
+
+I didn't write implementations for other any other record types, but their formats are equally well-documented in the RFC, and equally interesting!
+
+## Just scratching the surface
+
+I was pleased at how easy it was to write a basic DNS server, but in DNS the devil is in the details. There are countless legacy client behaviors to take into account, IPv6 to handle, and modern security enhancements like [DNS over HTTPS](https://en.wikipedia.org/wiki/DNS_over_HTTPS) and [DNS over TLS](https://en.wikipedia.org/wiki/DNS_over_TLS).
+
+I was also very impressed with the Google Public DNS team's [blog post](https://security.googleblog.com/2024/03/google-public-dnss-approach-to-fight.html) about dealing with cache poisoning attacks at a worldwide scale. DNS itself may be easy, but doing it securely and reliably at scale is a clearly a big challenge!
