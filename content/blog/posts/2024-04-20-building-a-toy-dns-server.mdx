@@ -79,12 +79,12 @@ The header is kind of a map for the rest of the message; It includes information
       <th>07</th>
       <th>08</th>
       <th>09</th>
-      <th>0a</th>
-      <th>0b</th>
-      <th>0c</th>
-      <th>0d</th>
-      <th>0e</th>
-      <th>0f</th>
+      <th>10</th>
+      <th>11</th>
+      <th>12</th>
+      <th>13</th>
+      <th>14</th>
+      <th>15</th>
     </tr>
   </thead>
   <tbody>
@@ -192,12 +192,12 @@ The DNS query's header included the number of questions in the query. Similar to
       <th>07</th>
       <th>08</th>
       <th>09</th>
-      <th>0a</th>
-      <th>0b</th>
-      <th>0c</th>
-      <th>0d</th>
-      <th>0e</th>
-      <th>0f</th>
+      <th>10</th>
+      <th>11</th>
+      <th>12</th>
+      <th>13</th>
+      <th>14</th>
+      <th>15</th>
       <th>...more</th>
     </tr>
   </thead>
@@ -216,7 +216,7 @@ The DNS query's header included the number of questions in the query. Similar to
   </tbody>
 </table>
 
-The query name is the actual DNS name being queried, like `hello.example.com.`. The length of this name can vary quite a bit, so the name is split into a series of labels. Each section of the domain name between `.` characters is a label. In each label, the first byte indicates how long the label is, and is followed by that many bytes of text. This continues until a zero-length label is found:
+The query name is the actual DNS name being queried, like `hello.example.com.`. The length of this name can vary quite a bit, so the name is split into a series of labels. Each section of the domain name between `.` characters is a label. In each label, the first byte indicates how long the label is, and is followed by that many bytes of ASCII characters. This continues until a zero-length label is found:
 
 <table>
   <tbody>
@@ -275,12 +275,12 @@ Each answer follows a similar format, although the lengths of the record name an
       <th>07</th>
       <th>08</th>
       <th>09</th>
-      <th>0a</th>
-      <th>0b</th>
-      <th>0c</th>
-      <th>0d</th>
-      <th>0e</th>
-      <th>0f</th>
+      <th>10</th>
+      <th>11</th>
+      <th>12</th>
+      <th>13</th>
+      <th>14</th>
+      <th>15</th>
       <th>...more</th>
     </tr>
   </thead>
@@ -297,10 +297,10 @@ Each answer follows a similar format, although the lengths of the record name an
       <td colspan="16">Record class</td>
     </tr>
     <tr>
-      <td colspan="16">Record TTL (bytes 1-16)</td>
+      <td colspan="16">Record TTL (bits 1-16)</td>
     </tr>
     <tr>
-      <td colspan="16">Record TTL (bytes 17-32)</td>
+      <td colspan="16">Record TTL (bits 17-32)</td>
     </tr>
     <tr>
       <td colspan="16">Record data length</td>
@@ -349,12 +349,12 @@ An `A` record returns an IPv4 address. Although we normally read IPv4 addresses 
       <th>07</th>
       <th>08</th>
       <th>09</th>
-      <th>0a</th>
-      <th>0b</th>
-      <th>0c</th>
-      <th>0d</th>
-      <th>0e</th>
-      <th>0f</th>
+      <th>10</th>
+      <th>11</th>
+      <th>12</th>
+      <th>13</th>
+      <th>14</th>
+      <th>15</th>
     </tr>
   </thead>
   <tbody>
