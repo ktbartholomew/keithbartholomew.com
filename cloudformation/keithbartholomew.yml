@@ -98,6 +98,20 @@ Resources:
               HTTPSPort: 443
               HTTPPort: 80
               OriginProtocolPolicy: "https-only"
+          - ConnectionTimeout: 10
+            ConnectionAttempts: 3
+            DomainName: plausible.io
+            OriginPath: ""
+            Id: plausible.io
+            CustomOriginConfig:
+              OriginKeepaliveTimeout: 5
+              OriginReadTimeout: 30
+              OriginSSLProtocols:
+                - "TLSv1.2"
+              HTTPSPort: 443
+              HTTPPort: 80
+              OriginProtocolPolicy: "https-only"
+
         ViewerCertificate:
           MinimumProtocolVersion: "TLSv1.2_2021"
           SslSupportMethod: "sni-only"
@@ -148,6 +162,31 @@ Resources:
             Locations: []
             RestrictionType: "none"
         CacheBehaviors:
+          - Compress: true
+            TargetOriginId: plausible.io
+            ViewerProtocolPolicy: "https-only"
+            AllowedMethods:
+              - "GET"
+              - "HEAD"
+            PathPattern: "/js/script*"
+            OriginRequestPolicyId: "b689b0a8-53d0-40ab-baf2-68738e2966ac"
+            CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+
+          - Compress: true
+            TargetOriginId: plausible.io
+            ViewerProtocolPolicy: "https-only"
+            AllowedMethods:
+              - "HEAD"
+              - "DELETE"
+              - "POST"
+              - "GET"
+              - "OPTIONS"
+              - "PUT"
+              - "PATCH"
+            PathPattern: "/api/event"
+            OriginRequestPolicyId: "b689b0a8-53d0-40ab-baf2-68738e2966ac"
+            CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+
           - Compress: true
             TargetOriginId: !Sub "${FunctionsApi}.execute-api.us-east-1.amazonaws.com"
             ViewerProtocolPolicy: "redirect-to-https"
@@ -318,5 +357,3 @@ Resources:
       RetentionInDays: 7
       LogGroupName: "/aws/lambda/cloudfront-origin-test"
       DataProtectionPolicy: {}
-
-

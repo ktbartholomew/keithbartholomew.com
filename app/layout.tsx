@@ -50,6 +50,12 @@ export default function RootLayout({
             {children}
           </div>
         </div>
+        {/* https://plausible.io/js/script.js */}
+        <script
+          defer
+          data-domain="keithbartholomew.com"
+          src="/js/script.js"
+        ></script>
       </body>
     </html>
   );
