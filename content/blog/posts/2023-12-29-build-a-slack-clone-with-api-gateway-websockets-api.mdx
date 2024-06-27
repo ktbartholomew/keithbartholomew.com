@@ -15,7 +15,7 @@ I decided to build a clone of [Slack](https://slack.com/) to demonstrate some re
 
 ## Overview
 
-![Several browser windows, each running the Slack clone demo](/serverless-slack-clone-app.png)
+![Several browser windows, each running the Slack clone demo](/serverless-slack-clone-app.webp)
 
 The demo consists of a front-end [Next.js](https://nextjs.org/) app that makes a WebSocket connection to an [API Gateway WebSockets API](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api.html) and uses that to stream updates about messages, when users are typing, and which users have an active connection.
 
@@ -416,7 +416,7 @@ Some of the message types (like `listRooms` and `listUsers`) follow a request/re
 Because my Lambda functions aren't actually handling WebSockets directly, they don't communicate back to clients via a direct method like `WebSocket.send()`. Instead, API Gateway exposes an HTTP endpoint that my application can `POST` a message to, and API Gateway will forward that message to the client. This endpoint has a URL like
 
 ```handlebars
-https://{{ apiDomain }}/{{ stage }}/@connections/{{ connectionId }}
+https://{{apiDomain}}/{{stage}}/@connections/{{connectionId}}
 ```
 
 Each message includes the client's connection ID at `event.requestContext.connectionId`, so sending responses directly back to the client is pretty straightforward. However, to broadcast a message to other clients (like when notifying them of a new message), I have to look up the relevant connection IDs from DynamoDB.
