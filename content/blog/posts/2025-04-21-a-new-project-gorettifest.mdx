@@ -1,0 +1,36 @@
+---
+title: "A New Project: gorettifest.com"
+date: 2025-04-21T14:00:00.000Z
+excerpt: |
+  When our school’s fall fundraiser got a total rebrand, I stepped in to help build the new GorettiFest website. Here’s how we brought a grassroots parish event into the digital age — and what I learned along the way.
+---
+
+_[Visit gorettifest.com](https://gorettifest.com)_
+
+In the summer of 2024, (coincidentally the same time my regular blogging cadence screeched to a halt) I got a text message from a parent at my daughter's school:
+
+> Him: How's your bandwidth to help me with some SMG website stuff for GorettiFest?
+>
+> Me: um, what's a GorettiFest?
+
+And so my adventure began.
+
+For decades, the school had run a fall fundraiser that had been known as "Kountry Karnival" since time immemorial. The event had always had a charming and homegrown flair that made it cheap to plan and advertise, but limited in its potential reach. This year, the parish had a newfound vigor to make the fundraiser bigger and better, transforming it from a tiny in-house fundraiser to a festival that would draw the attention of the entire city. The rebrand demanded a new name, and so "GorettiFest" was born as a playful spin on the school's patron, Saint Maria Goretti.
+
+For years, I had seen the festival marketed in the same lackluster ways: a wooden sign on the street in front of the school, and a page in the parish bulletin shortly beforehand. What did the festival include? How do you get there or park? Were there any pictures to help people understand the vibe? All that would change this year. Instead of assuming that people already knew what the festival was about, we knew that we were communicating with an audience of relative strangers, for whom we needed to clearly explain what GorettiFest is all about.
+
+The project instantly made sense to me: We needed a simple, modern website laser-focused on convincing people that GorettiFest would be a ton of fun, and that they should attend and spend the entire weekend hanging out at the festival (and obviously buying tickets to do activities, thus raising more money for the school). I researched a lot of the other large, for-profit "Oktoberfest" festivals in the area to get some ideas, and found that the formula was pretty simple: Make sure people know when and where it is, and what kind of fun they could expect once they arrived.
+
+<p><AutoplayVideo src="/gorettifest-scroll.mov" /></p>
+
+Within just a couple days I had thrown together a good scaffold for the website using Next.js and deployed it on a free-tier Vercel project. The GorettiFest director had already purchased a domain, so with a quick DNS tweak, we were in business! I also set up [Plausible Analytics](/blog/posts/2024-04-25-trying-plausible-analytics/) so the organizers could get some data about how their marketing efforts were going. This turned out to be really popular with them, and I saw those visitor dashboards at nearly every planning meeting!
+
+ Luckily, I had spent a few hours at the prior year's GorettiFest walking around and taking pictures, so I had some decent imagery to use on this year's website, but I pointed out to the organizers how hard it is to explain how fun an event like this is if you can't actually **show** them how fun it is. "You need somebody whose entire job it is to take photos and videos of the festival, so you can market next year's festival." That someone turned out to be me, but that's another story.
+
+ In an effort to rapidly get the site functional, I skipped using any kind of content management system and wrote all the content as plain JSX. This worked out well for quite a bit of the editing work because what we were saying and how we wanted to arrange it was constantly a moving target. In hindsight, I think I'd like to find a _slightly_ more structured way to represent the content, at least to make things like long lists easier to deal with.
+
+ We also used the website as a launchpad for a variety of other modernization efforts. We used it to redirect to sign-up forms for various things so that the redirects would log events in Plausible Analytics. We also used Square for almost 100% of the payments both online and at the festival itself. This gave us a ton more insight into how our guests were spending their time and money at the festival, and will help us take a more data-driven approach to next year's event.
+
+ As the festival date approached, we shifted the website's purpose into being a digital program for guests. We pared it down to only essential day-of details like where to park, a map of attractions, and a live schedule for our main stage. This really paid off: we had our highest traffic numbers **during** GorettiFest, while everybody was on-site.
+
+ It's wild to look back and see how much a group of passionate volunteers could grow GorettiFest in just one year. I was only a tiny part of the festival's success; without dozens of other volunteers truly dedicating themselves to this project, it never would have happened. I'm grateful to have been part of that team, and I'm already tossing around ideas to make GorettiFest 2025 even better!
