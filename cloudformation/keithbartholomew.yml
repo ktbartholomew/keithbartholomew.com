@@ -235,7 +235,7 @@ Resources:
       Role: !GetAtt RewriterRole.Arn
       FileSystemConfigs: []
       FunctionName: "keithbartholomew-com-rewrite"
-      Runtime: "nodejs20.x"
+      Runtime: "nodejs24.x"
       PackageType: "Zip"
       LoggingConfig:
         LogFormat: "Text"
@@ -310,7 +310,7 @@ Resources:
       Role: !GetAtt OriginTestRole.Arn
       FileSystemConfigs: []
       FunctionName: "cloudfront-origin-test"
-      Runtime: "nodejs20.x"
+      Runtime: "nodejs24.x"
       PackageType: "Zip"
       LoggingConfig:
         LogFormat: "Text"
