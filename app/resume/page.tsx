@@ -43,7 +43,7 @@ export default function Page() {
       <p>
         In addition to building the development platform, I also participated in
         many internal open-source and developer experience projects, including
-        building and maintaining librariese and CLI utilities, coaching junior
+        building and maintaining libraries and CLI utilities, coaching junior
         engineers on best practices, and publishing an internal podcast to boost
         developer engagement.
       </p>
