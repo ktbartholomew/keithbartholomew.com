@@ -78,7 +78,6 @@ Resources:
               Enabled: false
             S3OriginConfig:
               OriginAccessIdentity: ""
-            OriginPath: "/_next/static"
             Id: !Sub "${S3Bucket.RegionalDomainName}/_next/static"
           - ConnectionTimeout: 10
             OriginAccessControlId:
