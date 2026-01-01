@@ -46,9 +46,9 @@ export default function RootLayout({
               <Sidebar />
             </div>
           </div>
-          <div className="flex-auto p-4 md:p-8 md:w-3/4 max-w-[96ch]">
+          <main className="flex-auto p-4 md:p-8 md:w-3/4 max-w-[96ch]">
             {children}
-          </div>
+          </main>
         </div>
         {/* https://plausible.io/js/script.js */}
         <script

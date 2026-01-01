@@ -2,7 +2,7 @@
 title: "A Look Back at my AI Journey in 2025"
 date: 2025-12-31T23:59:59.999Z
 excerpt: |
-  From casual use to in-depth tooling, 2025 has been a transformative year in my relationship with AI.
+  From casual use to in-depth tooling, 2025 has been a transformative year in my relationship with AI. Beyond just using AI tools more, **how** I used them also changed.
 ---
 
 2025 was a busy year for AI, with huge advancements in the overall ecosystem like the widespread adoption of [Model Context Protocol](https://modelcontextprotocol.io/) and [Agent2Agent](https://a2a-protocol.org/) and [several](https://www.anthropic.com/news/claude-opus-4-5) [advancements](https://openai.com/index/introducing-gpt-5-2/) to the [foundation](https://mistral.ai/news/mistral-3) [models](https://blog.google/products/gemini/gemini-3/) from most of the major AI players.
@@ -14,8 +14,6 @@ Personally, 2025 marked the first year that I truly adopted AI as a core part of
 _👆 OpenAI Codex made that chart_
 
 Beyond just using AI more (which on its own is not necessarily a good thing), **how** I used AI also changed throughout the year. As I’m writing this there are only 8 hours remaining in 2025, so let’s break it down!
-
-> For my personal stuff, I almost exclusively use ChatGPT and the OpenAI ecosystem. For work, I use Anthropic’s tools because of enterprise agreements we have with them. Thus, my selective use of these two is mostly about the work/life context in which I’m using them.
 
 ## 2024: Random Thoughts Machine
 
@@ -29,27 +27,15 @@ GoDaddy launched a huge internal initiative to get all of our engineers using AI
 
 To launch this initiative, I gave a talk at an internal “UnConference” that was mostly focused on my AI pet peeve at the time: corporate AI slop. The accessibility of AI tools had reached the non-technical folks, who found it _so neat_ that they could post giant AI-generated “reports” in Slack or play a deeply-hallucinated AI video instead of giving their own presentation. I cautioned my fellow engineers that the reason they were getting paychecks wasn’t their ability to type code, but their ability to understand and solve complex business problems. “Use AI as a tool for your own critical thinking,” I told them. _More_ content is not better, and with content being so easy to come by, editing yourself is more important than ever.
 
-Model Context Protocol (MCP) really started gaining traction around this time, so I used Claude Code to vibe-code an MCP server for the internal AWS deployment platform I run. Creating the server was really quite easy—but I discovered that tuning the way I returned data in tool responses made a huge difference to the model’s ability to use them. I also found it helpful to include natural language descriptions of the tool data so the model would know how to interpret it.
+My team and I spent a fair amount of time crafting complex Claude Code slash commands to create a Jira or PRD for a feature, and to automatically review PRs and post comments to GitHub. Both of these ended up being so noisy and error prone that we stopped using them…but live and learn!
 
-My team and I spent a fair amount of time crafting complex Claude Code slash commands to create a Jira or PRD for a feature, and to automatically review PRs and post comments to GitHub. Both of these ended up being so noisy and error-prone that we stopped using them…but live and learn!
-
-The name of the game in the beginning of the year was really to push the limits of vibe-coding in a big tech company world to find the breaking points, and boy did we find them.
-
-Massive, time-consuming hallucinations and fighting with the LLM’s lack of understanding about our internal libraries, combined with an occasional lack of understanding on the part of the engineers themselves led to at least one (minor) production incident, and that was enough for us to learn some important lessons.
-
-Writing code faster doesn’t mean much if the code solves the wrong problem, no engineer can understand it, or the company loses money because the hallucinated code causes an outage.
+The name of the game in the beginning of the year was really to push the limits of vibe-coding in a big tech company world to find the breaking points—we had a running joke of who had more Claude Code sessions running at a single time!
 
 ## Late 2025: Context Isn’t King—It’s Currency
 
 For a while in the middle of the year, I stopped using Claude Code completely. I had lost some trust in it, and I was being faced with so many deeply-specific and delicate problems that it wasn’t worth my time to let Claude _try_, only to have to correct or reject it.
 
 But soon, some interesting use cases started cropping up. I had to wade through tons of data, make multiple API calls for each item, analyze the data I got, then do some additional tasks depending on what I saw, and wait for those tasks to finish. It was tedious to do myself, mostly consisted of writing the most horrendous nested loops I have ever touched, and would only need to use once. So if I’m writing “throwaway” code, why bother writing it at all? Why not let Claude write these cursed loops and sift through thousand-line CSVs and call the APIs and do the waiting? What could have been weeks of hell turned into a couple days of letting Claude write some scripts to iterate over a list and methodically execute the plan that I helped it form.
-
-### How I Learned to Stop Worrying and Love the Prompt
-
-At first, I was obsessed with writing comprehensive `CLAUDE.md` files full of every detail and technical nit I could think of. I guess the purported goal of this strategy is to not repeat yourself. (something engineers _really_ hate doing) But I started to find that these instructions couldn't possibly account for the variances and exceptions I would find in my real work and I would end up correcting Claude anyways. So, let's stop trying to "one-shot" everything and get used to the idea of controlling context and giving Claude specific, directed instructions for the task of the moment. After we're done, delete the context and start fresh. As soon as I see Claude’s infamous “you’re absolutely right!”, I nuke the context and start over with more specific instructions.
-
-Is it more hands-on? Yes? Do I get the results I want every time? Yes! Do I spend less time revising or carefully analyzing AI-generated code to be sure it hasn’t hallucinated a solution? Absolutely! You could say I’ve turned into a Claude Code minimalist.
 
 ### Building Specialized, AI-powered Tools
 
@@ -76,7 +62,12 @@ Take for example this biblical joke I made about [Cain and Abel](https://en.wiki
     <tr>
       <td>
         <figure>
-          <img src="/out-of-eden-logo-1.webp" width="512" height="512" />
+          <img
+            src="/out-of-eden-logo-1.webp"
+            alt="AI-generated logo created by ChatGPT 4o"
+            width="512"
+            height="512"
+          />
           <figcaption className="text-center">
             <em>generated January 12, 2025</em>
           </figcaption>
@@ -84,7 +75,12 @@ Take for example this biblical joke I made about [Cain and Abel](https://en.wiki
       </td>
       <td>
         <figure>
-          <img src="/out-of-eden-logo-2.webp" width="512" height="512" />
+          <img
+            src="/out-of-eden-logo-2.webp"
+            alt="AI-generated logo created by ChatGPT 5.2"
+            width="512"
+            height="512"
+          />
           <figcaption className="text-center">
             <em>generated December 31, 2025</em>
           </figcaption>
@@ -114,17 +110,18 @@ Throughout the year, I made a variety of AI-generated riffs on my real headshot 
 
 ![A grid of AI-generated images of the author in a variety of styles](/ai-generated-profile-pics.webp)
 
-## My Top 10 AI Use Cases
+## My Top AI Use Cases
 
 It's listicle time!
 
-- **Write the code myself, let AI write the tests.** I know what needs to happen; AI is great at filling in the safety net.
-- **Refactor once by hand, then let AI replicate the pattern.** Show it the right way once, then delegate the repetition.
-- **Generate one-off, disposable scripts.** Especially cursed bash loops that chew through APIs, CSVs, or logs and will never be run again. Case in point, I used Codex to parse and analyze my exported OpenAI data and generate the plot at the beginning of this post!
-- **Vibe-code quick-and-dirty analysis tools.** Throw together a single-file HTML page to analyze metrics or visualize data without standing up “real” software. When I'm done with my analysis, throw it all away.
-- **Pressure-test architecture decisions.** Sometimes for validation, sometimes to argue with me — both are useful.
-- **Ask nuanced AWS questions that don’t live in one doc.** Limits, edge cases, weird interactions, and “what actually happens when…”.
-- **Highly personalized exercise, injury, and health guidance.** I struggled with a running injury over the summer. In addition to consulting an actual PT, I was able to describe feelings, sensations and nuances of my condition to an AI companion, supplementing my professional medical advice and beating generic internet advice by a mile.
-- **Hands-free thinking via voice chat.** At least ten times while driving this year, I've started a voice chat with ChatGPT, set my phone down, and talked through tech ideas or recipes while stuck in traffic.
-- **Interactive cooking coach.** This is one of my favorites. I had a complex lobster bisque recipe that I had read and studied, but I couldn't keep going back to my laptop or phone to re-read steps, especially with messy hands. So I uploaded the recipe to a ChatGPT conversation and then set my phone in hands-free mode on the countertop. I was able to ask it follow-up questions about the recipe while I worked, getting technique advice and coaching as I went along. Also useful: explaining what the heck “good” risotto is supposed to look and feel like, in plain English.
-- **Fantasy football advisor.** I used it to plan my fantasy football draft, sending it live draft picks and bantering about strategy options. I came in second-to-last place. Take from that what you will.
+1. **Coding while walking around.** Claude can hold working context while I sit through a meeting or step away from my desk to deal with real life, then pick right back up where we left off. It’s not coding faster — it’s not losing flow when I get interrupted.
+1. **Being the mediator between agents.** I intentionally separate “exploration” and “execution” into different agents so doubts, research, and second-guessing don’t poison the main thread. Once I decide, I give the execution agent clear, confident direction and shield it from my own uncertainty.
+1. **Minimal prompts, aggressively managed context.** I stopped trying to one-shot everything with massive CLAUDE.md files and started giving tight, task-specific instructions. When the model starts getting overly agreeable or vague, I nuke the context and start fresh.
+1. **Refactor once by hand, then let AI replicate the pattern.** Show it the right way once, then delegate the repetition.
+1. **Generate one-off, disposable scripts.** Especially cursed bash loops that chew through APIs, CSVs, or logs and will never be run again. Case in point, I used Codex to parse and analyze my exported OpenAI data and generate the plot at the beginning of this post!
+1. **Vibe-code quick-and-dirty analysis tools.** Throw together a single-file HTML page to analyze metrics or visualize data without standing up “real” software. When I'm done with my analysis, throw it all away.
+1. **Ask nuanced AWS questions that don’t live in one doc.** Limits, edge cases, weird interactions, and “what actually happens when…”.
+1. **Highly personalized exercise, injury, and health guidance.** I struggled with a running injury over the summer. In addition to consulting an actual PT, I was able to describe feelings, sensations and nuances of my condition to an AI companion, supplementing my professional medical advice and beating generic internet advice by a mile.
+1. **Hands-free thinking via voice chat.** At least ten times while driving this year, I've started a voice chat with ChatGPT, set my phone down, and talked through tech ideas or recipes while stuck in traffic.
+1. **Interactive cooking coach.** This is one of my favorites. I had a complex lobster bisque recipe that I had read and studied, but I couldn't keep going back to my laptop or phone to re-read steps, especially with messy hands. So I uploaded the recipe to a ChatGPT conversation and then set my phone in hands-free mode on the countertop. I was able to ask it follow-up questions about the recipe while I worked, getting technique advice and coaching as I went along. Also useful: explaining what the heck “good” risotto is supposed to look and feel like, in plain English.
+1. **Fantasy football advisor.** I used it to plan my fantasy football draft, sending it live draft picks and bantering about strategy options. I came in second-to-last place. Take from that what you will.
