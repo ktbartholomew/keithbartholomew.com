@@ -175,6 +175,24 @@ Resources:
             RestrictionType: "none"
         CacheBehaviors:
           - Compress: true
+            TargetOriginId: !Sub "${S3Bucket.RegionalDomainName}/_next/static"
+            ViewerProtocolPolicy: "redirect-to-https"
+            ResponseHeadersPolicyId: "eaab4381-ed33-4a86-88ca-d9558dc6cd63"
+            TrustedSigners: []
+            FieldLevelEncryptionId: ""
+            TrustedKeyGroups: []
+            PathPattern: "/_next/static*"
+            AllowedMethods:
+              - "HEAD"
+              - "GET"
+              - "OPTIONS"
+            CachedMethods:
+              - "HEAD"
+              - "GET"
+            SmoothStreaming: false
+            OriginRequestPolicyId: "88a5eaf4-2fd4-4709-b370-b4c650ea3fcf"
+            CachePolicyId: "658327ea-f89d-4fab-a63d-7e88639e58f6"
+          - Compress: true
             TargetOriginId: plausible.io
             ViewerProtocolPolicy: "https-only"
             AllowedMethods:
